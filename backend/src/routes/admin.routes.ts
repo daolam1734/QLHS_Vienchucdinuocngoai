@@ -2,6 +2,16 @@ import { Router } from 'express';
 import * as adminController from '../controllers/admin.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { checkRole } from '../middleware/role.middleware';
+import { 
+  validate,
+  validateHoSo, 
+  validateHoSoUpdate,
+  validateUser,
+  validateUserUpdate,
+  validateUserStatus,
+  validateDonVi,
+  validateDonViUpdate
+} from '../middleware/validation.middleware';
 
 const router = Router();
 
@@ -14,16 +24,25 @@ router.get('/dashboard-stats', adminController.getDashboardStats);
 
 // Hồ sơ Management
 router.get('/hoso', adminController.getAllHoSo);
+router.get('/hoso/:id', adminController.getHoSoById);
+router.post('/hoso', validate(validateHoSo), adminController.createHoSo);
+router.put('/hoso/:id', validate(validateHoSoUpdate), adminController.updateHoSo);
 router.delete('/hoso/:id', adminController.deleteHoSo);
 
 // User Management
 router.get('/users', adminController.getAllUsers);
-router.patch('/users/:id/status', adminController.updateUserStatus);
+router.get('/users/:id', adminController.getUserById);
+router.post('/users', validate(validateUser), adminController.createUser);
+router.put('/users/:id', validate(validateUserUpdate), adminController.updateUser);
+router.patch('/users/:id/status', validate(validateUserStatus), adminController.updateUserStatus);
 router.delete('/users/:id', adminController.deleteUser);
 router.post('/users/:id/reset-password', adminController.resetUserPassword);
 
 // Đơn vị Management
 router.get('/donvi', adminController.getAllDonVi);
+router.get('/donvi/:id', adminController.getDonViById);
+router.post('/donvi', validate(validateDonVi), adminController.createDonVi);
+router.put('/donvi/:id', validate(validateDonViUpdate), adminController.updateDonVi);
 router.delete('/donvi/:id', adminController.deleteDonVi);
 
 // Approval Queue

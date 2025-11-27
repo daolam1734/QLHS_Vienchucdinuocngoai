@@ -26,6 +26,14 @@ interface Config {
     maxFileSize: number;
     uploadPath: string;
   };
+  rateLimit: {
+    windowMs: number;
+    maxRequests: number;
+  };
+  session: {
+    secret: string;
+    maxAge: number;
+  };
 }
 
 const config: Config = {
@@ -49,8 +57,16 @@ const config: Config = {
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   },
   upload: {
-    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10),
+    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10), // 10MB
     uploadPath: process.env.UPLOAD_PATH || './uploads',
+  },
+  rateLimit: {
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
+    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+  },
+  session: {
+    secret: process.env.SESSION_SECRET || 'your_session_secret',
+    maxAge: parseInt(process.env.SESSION_MAX_AGE || '86400000', 10), // 24 hours
   },
 };
 

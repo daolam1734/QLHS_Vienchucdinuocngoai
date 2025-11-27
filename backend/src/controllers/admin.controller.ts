@@ -34,6 +34,43 @@ export const deleteHoSo = async (req: Request, res: Response) => {
   }
 };
 
+export const createHoSo = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.ma_nguoi_dung;
+    const hoSoData = { ...req.body, nguoi_dung_id: userId };
+    
+    const newHoSo = await adminService.createHoSo(hoSoData);
+    res.status(201).json({ message: 'Tạo hồ sơ thành công', data: newHoSo });
+  } catch (error: any) {
+    console.error('Error creating hoso:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi tạo hồ sơ' });
+  }
+};
+
+export const updateHoSo = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const hoSoData = req.body;
+    
+    await adminService.updateHoSo(id, hoSoData);
+    res.json({ message: 'Cập nhật hồ sơ thành công' });
+  } catch (error: any) {
+    console.error('Error updating hoso:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi cập nhật hồ sơ' });
+  }
+};
+
+export const getHoSoById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const hoSo = await adminService.getHoSoById(id);
+    res.json(hoSo);
+  } catch (error: any) {
+    console.error('Error getting hoso:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi lấy thông tin hồ sơ' });
+  }
+};
+
 // User Management
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -80,6 +117,41 @@ export const resetUserPassword = async (req: Request, res: Response) => {
   }
 };
 
+export const createUser = async (req: Request, res: Response) => {
+  try {
+    const userData = req.body;
+    const newUser = await adminService.createUser(userData);
+    res.status(201).json({ message: 'Tạo người dùng thành công', data: newUser });
+  } catch (error: any) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi tạo người dùng' });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userData = req.body;
+    
+    await adminService.updateUser(id, userData);
+    res.json({ message: 'Cập nhật người dùng thành công' });
+  } catch (error: any) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi cập nhật người dùng' });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = await adminService.getUserById(id);
+    res.json(user);
+  } catch (error: any) {
+    console.error('Error getting user:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi lấy thông tin người dùng' });
+  }
+};
+
 // Đơn vị Management
 export const getAllDonVi = async (req: Request, res: Response) => {
   try {
@@ -99,6 +171,41 @@ export const deleteDonVi = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error deleting donvi:', error);
     res.status(500).json({ message: error.message || 'Lỗi khi xóa đơn vị' });
+  }
+};
+
+export const createDonVi = async (req: Request, res: Response) => {
+  try {
+    const donViData = req.body;
+    const newDonVi = await adminService.createDonVi(donViData);
+    res.status(201).json({ message: 'Tạo đơn vị thành công', data: newDonVi });
+  } catch (error: any) {
+    console.error('Error creating donvi:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi tạo đơn vị' });
+  }
+};
+
+export const updateDonVi = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const donViData = req.body;
+    
+    await adminService.updateDonVi(id, donViData);
+    res.json({ message: 'Cập nhật đơn vị thành công' });
+  } catch (error: any) {
+    console.error('Error updating donvi:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi cập nhật đơn vị' });
+  }
+};
+
+export const getDonViById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const donVi = await adminService.getDonViById(id);
+    res.json(donVi);
+  } catch (error: any) {
+    console.error('Error getting donvi:', error);
+    res.status(500).json({ message: error.message || 'Lỗi khi lấy thông tin đơn vị' });
   }
 };
 

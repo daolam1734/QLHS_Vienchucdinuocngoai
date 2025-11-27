@@ -135,23 +135,7 @@ const Header = () => {
                 </button>
               </li>
             </ul>
-
-            {/* Mobile search */}
-            <div className="header-search mobile-only">
-              <form onSubmit={handleSearch}>
-                <div className="search-box">
-                  <input
-                    type="text"
-                    placeholder="Tra cứu mã hồ sơ..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <button type="submit">
-                    <Search size={18} />
-                  </button>
-                </div>
-              </form>
-            </div>
+            
           </div>
         </nav>
       </header>

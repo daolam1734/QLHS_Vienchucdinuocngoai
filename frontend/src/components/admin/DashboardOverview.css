@@ -48,10 +48,28 @@
   transition: all 0.2s;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   border-color: #1976D2;
   color: #1976D2;
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Stats Grid */
@@ -370,11 +388,22 @@
   background: white;
   border-color: #1976D2;
   color: #1976D2;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+  transform: translateY(-2px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.1);
 }
 
 .action-button svg {
   color: #1976D2;
+  transition: transform 0.2s;
+}
+
+.action-button:hover svg {
+  transform: scale(1.1);
 }
 
 /* Responsive */

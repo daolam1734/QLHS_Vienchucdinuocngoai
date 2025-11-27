@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -39,6 +39,20 @@ const AdminDashboard: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  // Lắng nghe sự kiện thay đổi tab từ DashboardOverview
+  useEffect(() => {
+    const handleChangeTab = (event: Event) => {
+      const customEvent = event as CustomEvent<{ tab: string }>;
+      setActiveTab(customEvent.detail.tab);
+    };
+
+    window.addEventListener('changeAdminTab', handleChangeTab);
+    
+    return () => {
+      window.removeEventListener('changeAdminTab', handleChangeTab);
+    };
+  }, []);
 
   const menuItems: MenuItem[] = [
     {

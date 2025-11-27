@@ -86,53 +86,6 @@ const ApprovalQueue: React.FC = () => {
     alert('Chức năng xem chi tiết đang được phát triển');
   };
 
-  const approvalListMock: ApprovalItem[] = [
-    {
-      id: '1',
-      maHoSo: 'HS001',
-      hoTen: 'Nguyễn Văn A',
-      donVi: 'Khoa CNTT',
-      loaiHoSo: 'Học tập',
-      capDuyet: 'Trưởng khoa',
-      ngayNop: '2025-11-20',
-      hanXuLy: '2025-11-25',
-      doUuTien: 'high'
-    },
-    {
-      id: '2',
-      maHoSo: 'HS002',
-      hoTen: 'Trần Thị B',
-      donVi: 'Khoa Kinh tế',
-      loaiHoSo: 'Nghiên cứu',
-      capDuyet: 'TCHC',
-      ngayNop: '2025-11-19',
-      hanXuLy: '2025-11-24',
-      doUuTien: 'medium'
-    },
-    {
-      id: '3',
-      maHoSo: 'HS003',
-      hoTen: 'Lê Văn C',
-      donVi: 'Khoa Ngoại ngữ',
-      loaiHoSo: 'Hội thảo',
-      capDuyet: 'BGH',
-      ngayNop: '2025-11-18',
-      hanXuLy: '2025-11-23',
-      doUuTien: 'high'
-    },
-    {
-      id: '4',
-      maHoSo: 'HS004',
-      hoTen: 'Phạm Thị D',
-      donVi: 'Khoa Sư phạm',
-      loaiHoSo: 'Đào tạo',
-      capDuyet: 'Trưởng khoa',
-      ngayNop: '2025-11-17',
-      hanXuLy: '2025-11-22',
-      doUuTien: 'low'
-    }
-  ];
-
   const getPriorityIcon = (priority: string) => {
     switch(priority) {
       case 'high': return <AlertTriangle size={16} className="text-red-500" />;

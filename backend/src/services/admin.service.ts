@@ -567,3 +567,322 @@ function getStatusColor(status: string): string {
   };
   return colorMap[status] || '#9E9E9E';
 }
+
+// Additional CRUD operations
+
+// Hồ sơ CRUD
+export const getHoSoById = async (id: string) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        h.*,
+        n.ho_ten as nguoi_dung_ho_ten,
+        dv.ten_don_vi,
+        lhs.ten_loai_ho_so,
+        qg.ten_quoc_gia,
+        tt.ten_trang_thai
+      FROM ho_so_di_nuoc_ngoai h
+      LEFT JOIN nguoi_dung n ON h.nguoi_dung_id = n.id
+      LEFT JOIN dm_don_vi dv ON n.don_vi_id = dv.id
+      LEFT JOIN dm_loai_ho_so lhs ON h.loai_ho_so_id = lhs.id
+      LEFT JOIN dm_quoc_gia qg ON h.quoc_gia_den_id = qg.id
+      LEFT JOIN dm_trang_thai tt ON h.trang_thai_hien_tai_id = tt.id
+      WHERE h.id = $1
+    `, [id]);
+    
+    if (result.rows.length === 0) {
+      throw new Error('Không tìm thấy hồ sơ');
+    }
+    
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+};
+
+export const createHoSo = async (hoSoData: any) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Get default status ID (CHO_DUYET)
+    const statusResult = await client.query(
+      "SELECT id FROM dm_trang_thai WHERE ma_trang_thai = 'CHO_DUYET' LIMIT 1"
+    );
+    const statusId = statusResult.rows[0]?.id;
+    
+    const result = await client.query(`
+      INSERT INTO ho_so_di_nuoc_ngoai (
+        ma_ho_so, nguoi_dung_id, loai_ho_so_id, quoc_gia_den_id,
+        muc_dich_chuyen_di, dia_chi_luu_tru, thoi_gian_du_kien_di,
+        thoi_gian_du_kien_ve, nguon_kinh_phi, trang_thai_hien_tai_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `, [
+      hoSoData.ma_ho_so || `HS${Date.now()}`,
+      hoSoData.nguoi_dung_id,
+      hoSoData.loai_ho_so_id,
+      hoSoData.quoc_gia_den_id,
+      hoSoData.muc_dich_chuyen_di,
+      hoSoData.dia_chi_luu_tru,
+      hoSoData.thoi_gian_du_kien_di,
+      hoSoData.thoi_gian_du_kien_ve,
+      hoSoData.nguon_kinh_phi,
+      statusId
+    ]);
+    
+    await client.query('COMMIT');
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const updateHoSo = async (id: string, hoSoData: any) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      UPDATE ho_so_di_nuoc_ngoai 
+      SET 
+        loai_ho_so_id = COALESCE($1, loai_ho_so_id),
+        quoc_gia_den_id = COALESCE($2, quoc_gia_den_id),
+        muc_dich_chuyen_di = COALESCE($3, muc_dich_chuyen_di),
+        dia_chi_luu_tru = COALESCE($4, dia_chi_luu_tru),
+        thoi_gian_du_kien_di = COALESCE($5, thoi_gian_du_kien_di),
+        thoi_gian_du_kien_ve = COALESCE($6, thoi_gian_du_kien_ve),
+        nguon_kinh_phi = COALESCE($7, nguon_kinh_phi)
+      WHERE id = $8
+    `, [
+      hoSoData.loai_ho_so_id,
+      hoSoData.quoc_gia_den_id,
+      hoSoData.muc_dich_chuyen_di,
+      hoSoData.dia_chi_luu_tru,
+      hoSoData.thoi_gian_du_kien_di,
+      hoSoData.thoi_gian_du_kien_ve,
+      hoSoData.nguon_kinh_phi,
+      id
+    ]);
+    
+    if (result.rowCount === 0) {
+      throw new Error('Không tìm thấy hồ sơ');
+    }
+  } finally {
+    client.release();
+  }
+};
+
+// User CRUD
+export const getUserById = async (id: string) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        nd.*,
+        dv.ten_don_vi,
+        vt.ten_vai_tro,
+        vt.ma_vai_tro
+      FROM nguoi_dung nd
+      LEFT JOIN dm_don_vi dv ON nd.don_vi_id = dv.id
+      LEFT JOIN phan_quyen pq ON nd.id = pq.nguoi_dung_id
+      LEFT JOIN dm_vai_tro vt ON pq.vai_tro_id = vt.id
+      WHERE nd.id = $1
+    `, [id]);
+    
+    if (result.rows.length === 0) {
+      throw new Error('Không tìm thấy người dùng');
+    }
+    
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+};
+
+export const createUser = async (userData: any) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Import bcrypt for password hashing
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(userData.password || 'password123', 10);
+    
+    // Insert user
+    const userResult = await client.query(`
+      INSERT INTO nguoi_dung (
+        username, mat_khau, ho_ten, email, so_dien_thoai,
+        don_vi_id, is_active
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `, [
+      userData.username,
+      hashedPassword,
+      userData.ho_ten,
+      userData.email,
+      userData.so_dien_thoai,
+      userData.don_vi_id,
+      true
+    ]);
+    
+    const userId = userResult.rows[0].id;
+    
+    // Assign default role (VT_VIEN_CHUC)
+    const roleResult = await client.query(
+      "SELECT id FROM dm_vai_tro WHERE ma_vai_tro = $1 LIMIT 1",
+      [userData.ma_vai_tro || 'VT_VIEN_CHUC']
+    );
+    
+    if (roleResult.rows.length > 0) {
+      await client.query(
+        'INSERT INTO phan_quyen (nguoi_dung_id, vai_tro_id) VALUES ($1, $2)',
+        [userId, roleResult.rows[0].id]
+      );
+    }
+    
+    await client.query('COMMIT');
+    return userResult.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const updateUser = async (id: string, userData: any) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Update user info
+    const result = await client.query(`
+      UPDATE nguoi_dung 
+      SET 
+        ho_ten = COALESCE($1, ho_ten),
+        email = COALESCE($2, email),
+        so_dien_thoai = COALESCE($3, so_dien_thoai),
+        don_vi_id = COALESCE($4, don_vi_id)
+      WHERE id = $5
+    `, [
+      userData.ho_ten,
+      userData.email,
+      userData.so_dien_thoai,
+      userData.don_vi_id,
+      id
+    ]);
+    
+    if (result.rowCount === 0) {
+      throw new Error('Không tìm thấy người dùng');
+    }
+    
+    // Update role if provided
+    if (userData.ma_vai_tro) {
+      const roleResult = await client.query(
+        "SELECT id FROM dm_vai_tro WHERE ma_vai_tro = $1 LIMIT 1",
+        [userData.ma_vai_tro]
+      );
+      
+      if (roleResult.rows.length > 0) {
+        await client.query(
+          'UPDATE phan_quyen SET vai_tro_id = $1 WHERE nguoi_dung_id = $2',
+          [roleResult.rows[0].id, id]
+        );
+      }
+    }
+    
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+// Đơn vị CRUD
+export const getDonViById = async (id: string) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        dv.*,
+        nd.ho_ten as truong_don_vi_ho_ten,
+        (SELECT COUNT(*) FROM nguoi_dung WHERE don_vi_id = dv.id) as so_nguoi
+      FROM dm_don_vi dv
+      LEFT JOIN nguoi_dung nd ON dv.truong_don_vi_id = nd.id
+      WHERE dv.id = $1
+    `, [id]);
+    
+    if (result.rows.length === 0) {
+      throw new Error('Không tìm thấy đơn vị');
+    }
+    
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+};
+
+export const createDonVi = async (donViData: any) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      INSERT INTO dm_don_vi (
+        ma_don_vi, ten_don_vi, loai_don_vi, truong_don_vi_id,
+        email, so_dien_thoai, dia_chi, ghi_chu
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `, [
+      donViData.ma_don_vi || `DV${Date.now()}`,
+      donViData.ten_don_vi,
+      donViData.loai_don_vi,
+      donViData.truong_don_vi_id,
+      donViData.email,
+      donViData.so_dien_thoai,
+      donViData.dia_chi,
+      donViData.ghi_chu
+    ]);
+    
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+};
+
+export const updateDonVi = async (id: string, donViData: any) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      UPDATE dm_don_vi 
+      SET 
+        ten_don_vi = COALESCE($1, ten_don_vi),
+        loai_don_vi = COALESCE($2, loai_don_vi),
+        truong_don_vi_id = COALESCE($3, truong_don_vi_id),
+        email = COALESCE($4, email),
+        so_dien_thoai = COALESCE($5, so_dien_thoai),
+        dia_chi = COALESCE($6, dia_chi),
+        ghi_chu = COALESCE($7, ghi_chu)
+      WHERE id = $8
+    `, [
+      donViData.ten_don_vi,
+      donViData.loai_don_vi,
+      donViData.truong_don_vi_id,
+      donViData.email,
+      donViData.so_dien_thoai,
+      donViData.dia_chi,
+      donViData.ghi_chu,
+      id
+    ]);
+    
+    if (result.rowCount === 0) {
+      throw new Error('Không tìm thấy đơn vị');
+    }
+  } finally {
+    client.release();
+  }
+};
+

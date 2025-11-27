@@ -6,8 +6,10 @@ import {
   Clock, 
   TrendingUp,
   TrendingDown,
-  ArrowUpRight,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Download,
+  Plus
 } from 'lucide-react';
 import axios from 'axios';
 import './DashboardOverview.css';
@@ -37,10 +39,55 @@ const DashboardOverview: React.FC = () => {
   const [recentApplications, setRecentApplications] = useState<RecentApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  const handleExportReport = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/v1/admin/reports/export', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { timeRange: 'month' },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `bao-cao-thang-${new Date().getTime()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error exporting report:', err);
+      alert('Không thể xuất báo cáo. Vui lòng thử lại sau.');
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+    setRefreshing(false);
+  };
+
+  const navigateToPage = (page: string) => {
+    // Emit custom event để AdminDashboard có thể lắng nghe và thay đổi tab
+    window.dispatchEvent(new CustomEvent('changeAdminTab', { detail: { tab: page } }));
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -134,8 +181,16 @@ const DashboardOverview: React.FC = () => {
           <p>Xin chào! Đây là bảng điều khiển quản lý hồ sơ đi nước ngoài</p>
         </div>
         <div className="dashboard-actions">
-          <button className="btn-secondary">
-            <ArrowUpRight size={18} />
+          <button 
+            className="btn-secondary" 
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw size={18} className={refreshing ? 'spinning' : ''} />
+            {refreshing ? 'Đang tải...' : 'Làm mới'}
+          </button>
+          <button className="btn-secondary" onClick={handleExportReport}>
+            <Download size={18} />
             Xuất báo cáo
           </button>
         </div>
@@ -167,7 +222,7 @@ const DashboardOverview: React.FC = () => {
         <div className="dashboard-card recent-applications">
           <div className="card-header">
             <h3>Hồ sơ gần đây</h3>
-            <button className="link-button">Xem tất cả</button>
+            <button className="link-button" onClick={() => navigateToPage('hoso')}>Xem tất cả</button>
           </div>
           <div className="applications-table">
             <table>
@@ -190,7 +245,7 @@ const DashboardOverview: React.FC = () => {
                     <td className="cell-dept">{app.department}</td>
                     <td>{app.type}</td>
                     <td>{app.country}</td>
-                    <td className="cell-date">{app.date}</td>
+                    <td className="cell-date">{formatDate(app.date)}</td>
                     <td>
                       <span 
                         className="status-badge" 
@@ -224,19 +279,35 @@ const DashboardOverview: React.FC = () => {
       <div className="dashboard-card quick-actions">
         <h3>Thao tác nhanh</h3>
         <div className="actions-grid">
-          <button className="action-button">
-            <FileText size={20} />
+          <button 
+            className="action-button" 
+            onClick={() => navigateToPage('hoso')}
+            title="Chuyển đến trang quản lý hồ sơ"
+          >
+            <Plus size={20} />
             <span>Tạo hồ sơ mới</span>
           </button>
-          <button className="action-button">
+          <button 
+            className="action-button" 
+            onClick={() => navigateToPage('users')}
+            title="Chuyển đến trang quản lý người dùng"
+          >
             <Users size={20} />
-            <span>Thêm người dùng</span>
+            <span>Quản lý người dùng</span>
           </button>
-          <button className="action-button">
+          <button 
+            className="action-button" 
+            onClick={() => navigateToPage('approval')}
+            title="Chuyển đến danh sách hồ sơ chờ phê duyệt"
+          >
             <CheckCircle size={20} />
             <span>Phê duyệt hồ sơ</span>
           </button>
-          <button className="action-button">
+          <button 
+            className="action-button" 
+            onClick={() => navigateToPage('reports')}
+            title="Xem báo cáo và thống kê"
+          >
             <TrendingUp size={20} />
             <span>Xem báo cáo</span>
           </button>
