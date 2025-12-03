@@ -1,9 +1,11 @@
 export interface User {
-  id: string;
-  username: string;
+  userId: string; // UUID from v4 schema
   email: string;
-  role: string;
+  role: 'Admin' | 'NguoiDuyet' | 'VienChuc'; // v4 role enum
   fullName: string;
+  maVienChuc?: string; // UUID, only if VienChuc
+  maNguoiDuyet?: string; // UUID, only if NguoiDuyet
+  isFirstLogin?: boolean;
 }
 
 export interface AuthState {

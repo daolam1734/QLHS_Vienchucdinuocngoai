@@ -1,220 +1,71 @@
-/* Services Section Styles */
 .services-section {
-  padding: 80px 0;
-  background: #f8f9fa;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: 60px;
+  padding: 80px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .section-title {
+  text-align: center;
   font-size: 36px;
   font-weight: 700;
-  color: #0066cc;
-  margin: 0 0 15px 0;
+  color: #1a1a1a;
+  margin-bottom: 50px;
 }
 
-.section-subtitle {
-  font-size: 18px;
-  color: #666;
-  margin: 0;
-}
-
-.services-grid {
+.features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 30px;
-  margin-bottom: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.service-card {
+.feature-card {
   background: white;
   border-radius: 12px;
-  padding: 35px 25px;
+  padding: 30px;
   text-align: center;
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.service-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: var(--card-color, #0066cc);
-  transform: scaleX(0);
-  transition: transform 0.3s;
-}
-
-.service-card:hover {
+.feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  border-color: var(--card-color, #0066cc);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
-.service-card:hover::before {
-  transform: scaleX(1);
+.feature-icon {
+  margin-bottom: 20px;
 }
 
-.service-card.locked {
-  opacity: 0.85;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.service-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(0, 102, 204, 0.1);
-  margin: 0 auto 20px;
-  position: relative;
-  transition: all 0.3s;
-}
-
-.service-card:hover .service-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.lock-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ffc107;
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.service-title {
+.feature-card h3 {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 15px 0;
+  color: #1a1a1a;
+  margin-bottom: 12px;
 }
 
-.service-description {
-  font-size: 14px;
+.feature-card p {
+  font-size: 15px;
   color: #666;
-  line-height: 1.6;
-  margin: 0 0 25px 0;
-  min-height: 60px;
+  line-height: 1.5;
 }
 
-.service-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--card-color, #0066cc);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 15px;
-  transition: all 0.3s;
-}
-
-.service-link:hover {
-  gap: 12px;
-}
-
-.service-link.locked-link {
-  color: #ffc107;
-}
-
-.arrow {
-  transition: transform 0.3s;
-  display: inline-block;
-}
-
-.service-link:hover .arrow {
-  transform: translateX(5px);
-}
-
-.services-note {
-  margin-top: 40px;
-}
-
-.note-box {
-  background: linear-gradient(135deg, #fff3cd 0%, #ffe5a8 100%);
-  border-left: 4px solid #ffc107;
-  padding: 20px 25px;
-  border-radius: 8px;
-  font-size: 15px;
-  color: #856404;
-  line-height: 1.6;
-}
-
-.note-box strong {
-  color: #533f03;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
   .services-section {
-    padding: 50px 0;
-  }
-  
-  .section-header {
-    margin-bottom: 40px;
+    padding: 50px 15px;
   }
   
   .section-title {
     font-size: 28px;
+    margin-bottom: 30px;
   }
   
-  .section-subtitle {
-    font-size: 16px;
-  }
-  
-  .services-grid {
+  .features-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
   
-  .service-card {
-    padding: 30px 20px;
-  }
-  
-  .service-icon {
-    width: 70px;
-    height: 70px;
-  }
-  
-  .service-description {
-    min-height: auto;
-  }
-  
-  .note-box {
-    font-size: 14px;
-    padding: 15px 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .service-title {
-    font-size: 18px;
-  }
-  
-  .service-icon {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .service-icon svg {
-    width: 32px;
-    height: 32px;
+  .feature-card {
+    padding: 25px;
   }
 }

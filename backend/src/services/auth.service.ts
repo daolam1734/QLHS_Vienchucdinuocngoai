@@ -17,25 +17,18 @@ export class AuthService {
         };
       }
 
-      // Get user from database with roles
+      // Get user from database
       const query = `
-        SELECT 
-          nd.id,
-          nd.username,
-          nd.password_hash,
-          nd.ho_ten,
+        SELECT
+          nd.user_id,
           nd.email,
-          nd.don_vi_id,
-          dv.ten_don_vi,
+          nd.full_name,
+          nd.role,
+          nd.ma_vien_chuc,
+          nd.ma_nguoi_duyet,
           nd.is_active,
-          nd.is_locked,
-          nd.ngay_tao,
-          vt.ma_vai_tro,
-          vt.ten_vai_tro
+          nd.ngay_tao
         FROM nguoi_dung nd
-        LEFT JOIN dm_don_vi dv ON nd.don_vi_id = dv.id
-        LEFT JOIN phan_quyen pq ON nd.id = pq.nguoi_dung_id
-        LEFT JOIN dm_vai_tro vt ON pq.vai_tro_id = vt.id
         WHERE nd.email = $1
       `;
 
@@ -51,46 +44,41 @@ export class AuthService {
       const user = result.rows[0];
 
       // Check if user is active
-      if (!user.is_active || user.is_locked) {
+      if (!user.is_active) {
         return {
           success: false,
           message: 'Tài khoản đã bị khóa hoặc chưa được kích hoạt',
         };
       }
 
-      // Verify password
-      const isPasswordValid = await comparePassword(password, user.password_hash);
-      if (!isPasswordValid) {
-        return {
-          success: false,
-          message: 'Email hoặc mật khẩu không đúng',
-        };
-      }
-
+      // Note: Schema v4 uses SSO authentication, no password stored
+      // This is a mock for development purposes
+      // In production, this would redirect to SSO
+      // For now, accept any password for testing (REMOVE IN PRODUCTION)
+      
       // Update last login
       await pool.query(
-        'UPDATE nguoi_dung SET last_login = NOW() WHERE id = $1',
-        [user.id]
+        'UPDATE nguoi_dung SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1',
+        [user.user_id]
       );
 
-      // Generate tokens with user's actual role
+      // Generate tokens
       const tokenPayload = {
-        ma_nguoi_dung: user.id,
+        user_id: user.user_id,
         email: user.email,
-        ma_vai_tro: user.ma_vai_tro || 'VT_VIEN_CHUC', // Use actual role or default
+        role: user.role,
+        ma_nguoi_duyet: user.ma_nguoi_duyet,
+        ma_vien_chuc: user.ma_vien_chuc
       };
 
       const token = generateAccessToken(tokenPayload);
       const refreshToken = generateRefreshToken(tokenPayload);
 
-      // Remove password from user object
-      const { password_hash, ...userWithoutPassword } = user;
-
       return {
         success: true,
         message: 'Đăng nhập thành công',
         data: {
-          user: userWithoutPassword,
+          user: user,
           token,
           refreshToken,
         },
@@ -105,24 +93,24 @@ export class AuthService {
   }
 
   // Get user profile
-  async getProfile(maNguoiDung: number): Promise<User | null> {
+  async getProfile(userId: string): Promise<User | null> {
     try {
       const query = `
-        SELECT 
-          nd.id as ma_nguoi_dung,
-          nd.username,
+        SELECT
+          nd.user_id,
           nd.email,
-          nd.ho_ten,
-          nd.don_vi_id as ma_don_vi,
-          dv.ten_don_vi,
+          nd.full_name,
+          nd.role,
+          nd.ma_vien_chuc,
+          nd.ma_nguoi_duyet,
           nd.is_active,
-          nd.ngay_tao
+          nd.ngay_tao,
+          nd.last_login
         FROM nguoi_dung nd
-        LEFT JOIN dm_don_vi dv ON nd.don_vi_id = dv.id
-        WHERE nd.id = $1
+        WHERE nd.user_id = $1
       `;
 
-      const result = await pool.query(query, [maNguoiDung]);
+      const result = await pool.query(query, [userId]);
 
       if (result.rows.length === 0) {
         return null;
@@ -137,57 +125,16 @@ export class AuthService {
 
   // Change password
   async changePassword(
-    maNguoiDung: number,
+    userId: string,
     oldPassword: string,
     newPassword: string
   ): Promise<AuthResponse> {
-    try {
-      // Get current password
-      const result = await pool.query(
-        'SELECT password_hash FROM nguoi_dung WHERE id = $1',
-        [maNguoiDung]
-      );
-
-      if (result.rows.length === 0) {
-        return {
-          success: false,
-          message: 'Người dùng không tồn tại',
-        };
-      }
-
-      // Verify old password
-      const isPasswordValid = await comparePassword(
-        oldPassword,
-        result.rows[0].password_hash
-      );
-
-      if (!isPasswordValid) {
-        return {
-          success: false,
-          message: 'Mật khẩu cũ không đúng',
-        };
-      }
-
-      // Hash new password
-      const hashedPassword = await hashPassword(newPassword);
-
-      // Update password
-      await pool.query(
-        'UPDATE nguoi_dung SET password_hash = $1, ngay_cap_nhat = NOW() WHERE id = $2',
-        [hashedPassword, maNguoiDung]
-      );
-
-      return {
-        success: true,
-        message: 'Đổi mật khẩu thành công',
-      };
-    } catch (error) {
-      console.error('Change password error:', error);
-      return {
-        success: false,
-        message: 'Có lỗi xảy ra trong quá trình đổi mật khẩu',
-      };
-    }
+    // Note: Schema v4 uses SSO authentication only
+    // Password changes should be done through SSO provider
+    return {
+      success: false,
+      message: 'Vui lòng thay đổi mật khẩu thông qua hệ thống SSO',
+    };
   }
 
   // Request password reset
@@ -203,7 +150,7 @@ export class AuthService {
 
       // Check if user exists
       const result = await pool.query(
-        'SELECT id, ho_ten FROM nguoi_dung WHERE email = $1 AND is_active = $2',
+        'SELECT user_id, full_name FROM nguoi_dung WHERE email = $1 AND is_active = $2',
         [email, true]
       );
 

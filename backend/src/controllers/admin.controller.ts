@@ -37,7 +37,10 @@ export const deleteHoSo = async (req: Request, res: Response) => {
 export const createHoSo = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.ma_nguoi_dung;
-    const hoSoData = { ...req.body, nguoi_dung_id: userId };
+    console.log('Creating hoso - User ID:', userId);
+    console.log('Request body:', req.body);
+    
+    const hoSoData = { ...req.body, nguoi_tao_id: userId };
     
     const newHoSo = await adminService.createHoSo(hoSoData);
     res.status(201).json({ message: 'Tạo hồ sơ thành công', data: newHoSo });
@@ -121,6 +124,11 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const userData = req.body;
     const newUser = await adminService.createUser(userData);
+    
+    // Reload mock SSO users to include the new user
+    const mockSSOService = require('../services/mock-sso.service').default;
+    await mockSSOService.reloadUsers();
+    
     res.status(201).json({ message: 'Tạo người dùng thành công', data: newUser });
   } catch (error: any) {
     console.error('Error creating user:', error);

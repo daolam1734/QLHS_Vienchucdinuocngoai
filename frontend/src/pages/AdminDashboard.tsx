@@ -4,11 +4,10 @@ import {
   FileText, 
   Users, 
   Building2, 
-  CheckSquare, 
   BarChart3, 
   History,
   Settings,
-  Menu,
+  AlignJustify,
   X,
   Bell,
   Search,
@@ -19,7 +18,6 @@ import './AdminDashboard.css';
 // Sub-components
 import DashboardOverview from '../components/admin/DashboardOverview';
 import HoSoManagement from '../components/admin/HoSoManagement';
-import ApprovalQueue from '../components/admin/ApprovalQueue';
 import UserManagement from '../components/admin/UserManagement';
 import DonViManagement from '../components/admin/DonViManagement';
 import ReportsPage from '../components/admin/ReportsPage';
@@ -68,12 +66,6 @@ const AdminDashboard: React.FC = () => {
       component: HoSoManagement
     },
     {
-      id: 'approval',
-      label: 'Phê duyệt',
-      icon: <CheckSquare size={20} />,
-      component: ApprovalQueue
-    },
-    {
       id: 'users',
       label: 'Người dùng',
       icon: <Users size={20} />,
@@ -87,13 +79,13 @@ const AdminDashboard: React.FC = () => {
     },
     {
       id: 'reports',
-      label: 'Báo cáo',
+      label: 'Báo cáo & Thống kê',
       icon: <BarChart3 size={20} />,
       component: ReportsPage
     },
     {
       id: 'audit',
-      label: 'Lịch sử',
+      label: 'Nhật ký hệ thống',
       icon: <History size={20} />,
       component: AuditLogs
     }
@@ -101,10 +93,28 @@ const AdminDashboard: React.FC = () => {
 
   const ActiveComponent = menuItems.find(item => item.id === activeTab)?.component || DashboardOverview;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Call backend logout endpoint
+        await fetch('http://localhost:3000/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(err => console.error('Logout API error:', err));
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local storage and state
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Use window.location for full page reload to clear all state
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -155,15 +165,18 @@ const AdminDashboard: React.FC = () => {
             <button 
               className="sidebar-toggle"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              title="Toggle sidebar"
             >
-              <Menu size={24} />
+              <AlignJustify size={22} />
             </button>
+          </div>
 
+          <div className="header-center">
             <div className="header-search">
               <Search size={20} />
               <input 
                 type="text" 
-                placeholder="Tìm kiếm hồ sơ, người dùng..." 
+                placeholder="Tìm kiếm hồ sơ, người dùng, đơn vị..." 
               />
             </div>
           </div>
@@ -191,18 +204,18 @@ const AdminDashboard: React.FC = () => {
                         <FileText size={16} />
                       </div>
                       <div className="notification-content">
-                        <p className="notification-title">Hồ sơ mới chờ phê duyệt</p>
-                        <p className="notification-text">HS001 - Nguyễn Văn A</p>
+                        <p className="notification-title">Hồ sơ mới được tạo</p>
+                        <p className="notification-text">HS241129456 - Nguyễn Văn A</p>
                         <span className="notification-time">5 phút trước</span>
                       </div>
                     </div>
                     <div className="notification-item">
                       <div className="notification-icon">
-                        <CheckSquare size={16} />
+                        <Users size={16} />
                       </div>
                       <div className="notification-content">
-                        <p className="notification-title">Hồ sơ đã được duyệt</p>
-                        <p className="notification-text">HS002 - Trần Thị B</p>
+                        <p className="notification-title">Người dùng mới đăng ký</p>
+                        <p className="notification-text">Trần Thị B - Khoa CNTT</p>
                         <span className="notification-time">1 giờ trước</span>
                       </div>
                     </div>
@@ -255,6 +268,24 @@ const AdminDashboard: React.FC = () => {
         <main className="admin-content">
           <ActiveComponent />
         </main>
+
+        {/* Footer */}
+        <footer className="admin-footer">
+          <div className="footer-content">
+            <div className="footer-left">
+              <span className="footer-text">
+                © 2025 Trường Đại học Trà Vinh. All rights reserved.
+              </span>
+            </div>
+            <div className="footer-right">
+              <a href="#" className="footer-link">Hỗ trợ</a>
+              <span className="footer-divider">|</span>
+              <a href="#" className="footer-link">Điều khoản</a>
+              <span className="footer-divider">|</span>
+              <a href="#" className="footer-link">Bảo mật</a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

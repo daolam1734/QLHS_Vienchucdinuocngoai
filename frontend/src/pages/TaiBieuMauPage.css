@@ -1,0 +1,268 @@
+.page-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fb;
+}
+
+.page-main {
+  flex: 1;
+}
+
+/* Hero Section */
+.tbm-hero {
+  padding: 50px 0 40px;
+  background: linear-gradient(135deg, #0066cc, #004999);
+  color: #fff;
+  text-align: center;
+}
+
+.tbm-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.tbm-hero p {
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+/* Documents Section */
+.tbm-documents {
+  padding: 50px 0;
+  background: #f8fafc;
+}
+
+.document-category {
+  max-width: 1100px;
+  margin: 0 auto 50px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+}
+
+.document-category.highlight {
+  background: linear-gradient(135deg, #fffbf5, #fff8f0);
+  border-left: 5px solid #f59e0b;
+}
+
+.document-category h2 {
+  font-size: 1.8rem;
+  color: #0f172a;
+  margin-bottom: 30px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.document-category.highlight h2 {
+  color: #d97706;
+  border-bottom-color: #fbbf24;
+}
+
+.category-icon {
+  font-size: 2rem;
+}
+
+.document-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.document-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 60px 1fr 140px;
+  gap: 20px;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.document-card:hover {
+  background: #ffffff;
+  border-color: #0066cc;
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.12);
+  transform: translateX(4px);
+}
+
+.doc-icon {
+  font-size: 2.5rem;
+  text-align: center;
+}
+
+.doc-info {
+  flex: 1;
+}
+
+.doc-info h3 {
+  font-size: 1.1rem;
+  color: #0f172a;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.doc-info p {
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.doc-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.doc-format,
+.doc-size {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #0066cc, #004999);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.btn-download:hover {
+  background: linear-gradient(135deg, #0052a3, #003875);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.btn-download:active {
+  transform: scale(0.98);
+}
+
+/* Note Box */
+.note-box {
+  max-width: 1000px;
+  margin: 60px auto 0;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-radius: 12px;
+  padding: 32px 40px;
+  border-left: 5px solid #f59e0b;
+  box-shadow: 0 2px 12px rgba(245, 158, 11, 0.1);
+}
+
+.note-box h3 {
+  font-size: 1.4rem;
+  color: #78350f;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.note-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.note-box li {
+  font-size: 0.95rem;
+  color: #78350f;
+  line-height: 1.8;
+  margin-bottom: 12px;
+  padding-left: 24px;
+  position: relative;
+}
+
+.note-box li::before {
+  content: '▪';
+  position: absolute;
+  left: 0;
+  color: #f59e0b;
+  font-size: 1.2rem;
+}
+
+.note-box strong {
+  color: #92400e;
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tbm-hero {
+    padding: 36px 0 28px;
+  }
+
+  .tbm-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .tbm-hero p {
+    font-size: 1rem;
+  }
+
+  .tbm-documents {
+    padding: 36px 0;
+  }
+
+  .document-category {
+    margin-bottom: 30px;
+    padding: 24px 20px;
+  }
+
+  .document-category h2 {
+    font-size: 1.4rem;
+    padding-bottom: 16px;
+  }
+
+  .document-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .doc-icon {
+    font-size: 2rem;
+    margin-bottom: 0;
+  }
+
+  .doc-info h3 {
+    font-size: 1rem;
+  }
+
+  .doc-info p {
+    font-size: 0.85rem;
+  }
+
+  .btn-download {
+    width: 100%;
+    padding: 12px 20px;
+  }
+
+  .note-box {
+    padding: 24px 20px;
+    margin-top: 40px;
+  }
+
+  .note-box h3 {
+    font-size: 1.2rem;
+  }
+}

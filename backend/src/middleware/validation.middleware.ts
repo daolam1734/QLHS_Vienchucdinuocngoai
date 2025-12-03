@@ -27,39 +27,45 @@ export const validate = (validations: ValidationChain[]) => {
 
 // Validation rules for Hồ sơ
 export const validateHoSo = [
-  body('loai_ho_so_id').notEmpty().withMessage('Loại hồ sơ là bắt buộc'),
-  body('quoc_gia_den_id').notEmpty().withMessage('Quốc gia đến là bắt buộc'),
-  body('muc_dich_chuyen_di').notEmpty().withMessage('Mục đích chuyến đi là bắt buộc'),
-  body('dia_chi_luu_tru').notEmpty().withMessage('Địa chỉ lưu trú là bắt buộc'),
-  body('thoi_gian_du_kien_di').isISO8601().withMessage('Thời gian dự kiến đi không hợp lệ'),
-  body('thoi_gian_du_kien_ve').isISO8601().withMessage('Thời gian dự kiến về không hợp lệ'),
-  body('nguon_kinh_phi').notEmpty().withMessage('Nguồn kinh phí là bắt buộc'),
+  body('ten_chuyen_di').notEmpty().withMessage('Tên chuyến đi là bắt buộc'),
+  body('loai_ho_so').notEmpty().withMessage('Loại hồ sơ là bắt buộc'),
+  body('muc_dich').notEmpty().withMessage('Mục đích là bắt buộc'),
+  body('ngay_di_du_kien').notEmpty().withMessage('Ngày đi dự kiến là bắt buộc')
+    .isISO8601().withMessage('Ngày đi dự kiến không hợp lệ'),
+  body('ngay_ve_du_kien').notEmpty().withMessage('Ngày về dự kiến là bắt buộc')
+    .isISO8601().withMessage('Ngày về dự kiến không hợp lệ'),
+  body('quoc_gia_id').optional().isInt(),
+  body('ghi_chu').optional(),
 ];
 
 export const validateHoSoUpdate = [
-  body('loai_ho_so_id').optional().isInt(),
-  body('quoc_gia_den_id').optional().isInt(),
-  body('thoi_gian_du_kien_di').optional().isISO8601(),
-  body('thoi_gian_du_kien_ve').optional().isISO8601(),
+  body('ten_chuyen_di').optional().notEmpty(),
+  body('loai_ho_so').optional().notEmpty(),
+  body('muc_dich').optional().notEmpty(),
+  body('quoc_gia_id').optional().isInt(),
+  body('ngay_di_du_kien').optional().isISO8601(),
+  body('ngay_ve_du_kien').optional().isISO8601(),
+  body('ghi_chu').optional(),
 ];
 
 // Validation rules for User
 export const validateUser = [
-  body('username').notEmpty().withMessage('Tên đăng nhập là bắt buộc')
-    .isLength({ min: 3 }).withMessage('Tên đăng nhập tối thiểu 3 ký tự'),
-  body('password').notEmpty().withMessage('Mật khẩu là bắt buộc')
-    .isLength({ min: 6 }).withMessage('Mật khẩu tối thiểu 6 ký tự'),
   body('ho_ten').notEmpty().withMessage('Họ tên là bắt buộc'),
-  body('email').isEmail().withMessage('Email không hợp lệ'),
-  body('so_dien_thoai').optional().isMobilePhone('vi-VN').withMessage('Số điện thoại không hợp lệ'),
-  body('don_vi_id').notEmpty().withMessage('Đơn vị là bắt buộc'),
+  body('email').notEmpty().withMessage('Email là bắt buộc')
+    .isEmail().withMessage('Email không hợp lệ'),
+  body('ma_vai_tro').notEmpty().withMessage('Vai trò là bắt buộc')
+    .isIn(['VT_VIEN_CHUC', 'VT_NGUOI_DUYET', 'VT_ADMIN']).withMessage('Vai trò không hợp lệ'),
+  body('dien_thoai').optional().isMobilePhone('vi-VN').withMessage('Số điện thoại không hợp lệ'),
+  body('don_vi_id').if(body('ma_vai_tro').equals('VT_VIEN_CHUC')).notEmpty().withMessage('Đơn vị là bắt buộc cho Viên chức'),
+  body('la_dang_vien').optional().isBoolean().withMessage('Đảng viên phải là true/false'),
 ];
 
 export const validateUserUpdate = [
   body('ho_ten').optional().notEmpty(),
   body('email').optional().isEmail(),
-  body('so_dien_thoai').optional().isMobilePhone('vi-VN'),
+  body('dien_thoai').optional().isMobilePhone('vi-VN'),
   body('don_vi_id').optional().isInt(),
+  body('ma_vai_tro').optional().notEmpty(),
 ];
 
 export const validateUserStatus = [

@@ -1,319 +1,84 @@
-/* Documents Section Styles */
-.documents-section {
-  padding: 80px 0;
-  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+.cta-section {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
+  text-align: center;
+  color: white;
 }
 
-.documents-block,
-.regulations-block {
-  margin-bottom: 60px;
-}
-
-.documents-block:last-child,
-.regulations-block:last-child {
-  margin-bottom: 0;
-}
-
-.block-header {
-  margin-bottom: 40px;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.header-icon {
-  color: #0066cc;
-  padding: 15px;
-  background: rgba(0, 102, 204, 0.1);
-  border-radius: 12px;
-}
-
-.block-title {
-  font-size: 32px;
+.cta-section h2 {
+  font-size: 36px;
   font-weight: 700;
-  color: #0066cc;
-  margin: 0 0 5px 0;
+  margin-bottom: 16px;
 }
 
-.block-subtitle {
-  font-size: 16px;
-  color: #666;
-  margin: 0;
+.cta-section p {
+  font-size: 18px;
+  margin-bottom: 40px;
+  opacity: 0.95;
 }
 
-/* Documents Grid */
-.documents-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
-}
-
-.document-card {
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  border: 2px solid #e9ecef;
-  transition: all 0.3s;
+.cta-buttons {
   display: flex;
-  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.document-card:hover {
-  border-color: #0066cc;
-  box-shadow: 0 8px 25px rgba(0, 102, 204, 0.15);
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.cta-btn.primary {
+  background: white;
+  color: #0066cc;
+}
+
+.cta-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(255,255,255,0.3);
+}
+
+.cta-btn.secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+}
+
+.cta-btn.secondary:hover {
+  background: white;
+  color: #0066cc;
   transform: translateY(-3px);
 }
 
-.doc-icon {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  margin-bottom: 20px;
-}
-
-.doc-type {
-  position: absolute;
-  bottom: -8px;
-  right: -8px;
-  background: #ffd700;
-  color: #0066cc;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.doc-content {
-  flex: 1;
-}
-
-.doc-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 10px 0;
-  line-height: 1.4;
-}
-
-.doc-description {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 15px 0;
-  line-height: 1.5;
-}
-
-.doc-meta {
-  display: flex;
-  gap: 15px;
-  font-size: 13px;
-  color: #999;
-  margin-bottom: 20px;
-}
-
-.doc-updated {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.doc-download-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #0066cc;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-.doc-download-btn:hover {
-  background: #0052a3;
-  gap: 12px;
-}
-
-/* Regulations List */
-.regulations-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.regulation-item {
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  border-left: 4px solid #0066cc;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  transition: all 0.3s;
-  position: relative;
-}
-
-.regulation-item:hover {
-  box-shadow: 0 4px 20px rgba(0, 102, 204, 0.15);
-  transform: translateX(5px);
-}
-
-.new-badge {
-  position: absolute;
-  top: -10px;
-  left: 20px;
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
-  animation: pulse 2s infinite;
-}
-
-.regulation-content {
-  flex: 1;
-}
-
-.regulation-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
-}
-
-.regulation-description {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 8px 0;
-  line-height: 1.5;
-}
-
-.regulation-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: #999;
-}
-
-.regulation-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #0066cc;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  white-space: nowrap;
-  transition: all 0.3s;
-}
-
-.regulation-link:hover {
-  gap: 12px;
-  color: #0052a3;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .documents-section {
-    padding: 50px 0;
+  .cta-section {
+    padding: 60px 15px;
   }
   
-  .documents-block,
-  .regulations-block {
-    margin-bottom: 40px;
+  .cta-section h2 {
+    font-size: 28px;
   }
   
-  .header-content {
-    gap: 15px;
-  }
-  
-  .header-icon {
-    padding: 12px;
-  }
-  
-  .header-icon svg {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .block-title {
-    font-size: 24px;
-  }
-  
-  .block-subtitle {
-    font-size: 14px;
-  }
-  
-  .documents-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .regulation-item {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-  }
-  
-  .regulation-link {
-    align-self: flex-start;
-  }
-  
-  .new-badge {
-    left: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .block-title {
-    font-size: 20px;
-  }
-  
-  .doc-icon {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .doc-icon svg {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .doc-title {
-    font-size: 15px;
-  }
-  
-  .doc-description {
-    font-size: 13px;
-  }
-  
-  .doc-meta {
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .regulation-title {
+  .cta-section p {
     font-size: 16px;
   }
   
-  .regulation-description {
-    font-size: 13px;
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
   }
 }

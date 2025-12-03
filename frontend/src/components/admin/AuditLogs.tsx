@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { History, Search, Filter, Calendar, User, FileText, Settings, Lock, AlertCircle, RefreshCw } from 'lucide-react';
 import axios from 'axios';
+import { getLoaiCongViecText } from '../../utils/mappings';
 
 interface AuditLog {
   id: string;
@@ -32,7 +33,7 @@ const AuditLogs: React.FC = () => {
       setError(null);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get(`http://localhost:5000/api/v1/admin/audit-logs`, {
+      const response = await axios.get(`http://localhost:3000/api/admin/audit-logs`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page: currentPage,
@@ -70,35 +71,42 @@ const AuditLogs: React.FC = () => {
   };
 
   const filteredLogs = logList.filter(log => {
-    const matchSearch = log.nguoiThucHien.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       log.hanhDong.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       log.moTa.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSearch = (log.nguoiThucHien?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                       (log.hanhDong?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                       (log.moTa?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchType = filterType === 'all' || log.loai === filterType;
     return matchSearch && matchType;
   });
 
   return (
     <div className="admin-page">
-      <div className="page-header">
-        <div>
-          <h1>Lịch sử hoạt động</h1>
-          <p className="page-description">Theo dõi và kiểm tra các hoạt động trong hệ thống</p>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
+          <div className="admin-page-title-icon">
+            <History size={20} />
+          </div>
+          <div>
+            <h1>Nhật ký hệ thống</h1>
+            <p className="admin-page-subtitle">Theo dõi và kiểm tra các hoạt động trong hệ thống</p>
+          </div>
         </div>
       </div>
 
       {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+        <div className="admin-loading">
+          <div className="admin-spinner"></div>
+          <div className="admin-loading-text">Đang tải dữ liệu...</div>
         </div>
       )}
 
       {error && (
-        <div className="error-container">
-          <AlertCircle size={48} color="#F44336" />
-          <h3>Lỗi tải dữ liệu</h3>
-          <p>{error}</p>
-          <button className="btn-primary" onClick={fetchAuditLogs}>
+        <div className="admin-alert admin-alert-danger">
+          <AlertCircle className="admin-alert-icon" />
+          <div className="admin-alert-content">
+            <div className="admin-alert-title">Lỗi tải dữ liệu</div>
+            <div className="admin-alert-description">{error}</div>
+          </div>
+          <button className="admin-btn admin-btn-primary" onClick={fetchAuditLogs} style={{marginTop: 16}}>
             <RefreshCw size={20} />
             Thử lại
           </button>
@@ -107,20 +115,21 @@ const AuditLogs: React.FC = () => {
 
       {!loading && !error && (
         <>
-      <div className="filters-bar">
-        <div className="search-box">
-          <Search size={20} />
+      <div className="admin-toolbar">
+        <div className="admin-search-wrapper">
+          <Search className="admin-search-icon" size={18} />
           <input
             type="text"
+            className="admin-input admin-search-input"
             placeholder="Tìm kiếm theo người thực hiện, hành động..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <div className="filter-group">
+        <div className="admin-filter-group">
           <Filter size={20} />
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <select className="admin-select" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
             <option value="all">Tất cả loại</option>
             <option value="info">Thông tin</option>
             <option value="success">Thành công</option>
@@ -130,65 +139,84 @@ const AuditLogs: React.FC = () => {
         </div>
       </div>
 
-      <div className="audit-logs-container">
+      <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--admin-spacing-md)'}}>
         {filteredLogs.map(log => (
-          <div key={log.id} className={`audit-log-item ${getLogTypeClass(log.loai)}`}>
-            <div className="log-icon">
-              {getLogIcon(log.hanhDong)}
-            </div>
-            <div className="log-content">
-              <div className="log-header">
-                <span className="log-user">
-                  <User size={14} />
-                  {log.nguoiThucHien}
-                </span>
-                <span className="log-action">{log.hanhDong}</span>
-                {log.doiTuong !== 'Hệ thống' && (
-                  <span className="log-object">{log.doiTuong}</span>
-                )}
-              </div>
-              <div className="log-description">{log.moTa}</div>
-              <div className="log-footer">
-                <span className="log-time">
-                  <Calendar size={12} />
-                  {log.thoiGian}
-                </span>
-                <span className="log-ip">IP: {log.ipAddress}</span>
+          <div key={log.id} className="admin-card">
+            <div className="admin-card-body" style={{padding: 'var(--admin-spacing-md)'}}>
+              <div style={{display: 'flex', gap: 'var(--admin-spacing-md)', alignItems: 'flex-start'}}>
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 'var(--admin-radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: log.loai === 'success' ? 'var(--admin-success-light)' :
+                             log.loai === 'error' ? 'var(--admin-danger-light)' :
+                             log.loai === 'warning' ? 'var(--admin-warning-light)' : 'var(--admin-info-light)',
+                  color: log.loai === 'success' ? 'var(--admin-success)' :
+                         log.loai === 'error' ? 'var(--admin-danger)' :
+                         log.loai === 'warning' ? 'var(--admin-warning)' : 'var(--admin-info)',
+                  flexShrink: 0
+                }}>
+                  {getLogIcon(log.hanhDong)}
+                </div>
+                <div style={{flex: 1, minWidth: 0}}>
+                  <div style={{display: 'flex', alignItems: 'center', gap: 'var(--admin-spacing-sm)', marginBottom: 'var(--admin-spacing-xs)', flexWrap: 'wrap'}}>
+                    <span style={{fontWeight: 600, color: 'var(--admin-gray-900)', display: 'flex', alignItems: 'center', gap: 4}}>
+                      <User size={14} />
+                      {log.nguoiThucHien}
+                    </span>
+                    <span className={`admin-badge ${
+                      log.loai === 'success' ? 'admin-badge-success' :
+                      log.loai === 'error' ? 'admin-badge-danger' :
+                      log.loai === 'warning' ? 'admin-badge-warning' : 'admin-badge-info'
+                    }`}>
+                      {getLoaiCongViecText(log.hanhDong)}
+                    </span>
+                    {log.doiTuong !== 'Hệ thống' && (
+                      <span className="admin-badge admin-badge-gray">{log.doiTuong}</span>
+                    )}
+                  </div>
+                  <div style={{color: 'var(--admin-gray-700)', fontSize: '0.875rem', marginBottom: 'var(--admin-spacing-sm)'}}>{log.moTa}</div>
+                  <div style={{display: 'flex', gap: 'var(--admin-spacing-lg)', fontSize: '0.75rem', color: 'var(--admin-gray-500)'}}>
+                    <span style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                      <Calendar size={12} />
+                      {log.thoiGian}
+                    </span>
+                    <span>IP: {log.ipAddress}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         ))}
 
         {filteredLogs.length === 0 && (
-          <div className="empty-state">
-            <History size={48} />
-            <p>Không tìm thấy lịch sử hoạt động nào</p>
+          <div className="admin-empty">
+            <div className="admin-empty-icon">
+              <History size={48} />
+            </div>
+            <div className="admin-empty-title">Không tìm thấy nhật ký hoạt động nào</div>
+            <div className="admin-empty-description">Thử tìm kiếm với từ khóa khác hoặc thay đổi bộ lọc</div>
           </div>
         )}
       </div>
 
-      <div className="pagination">
-        <span className="pagination-info">Hiển thị 1-{filteredLogs.length} của {logList.length} hoạt động</span>
-        <div className="pagination-buttons">
-          <button className="btn-secondary" disabled>Trước</button>
-          <button className="btn-primary">1</button>
-          <button className="btn-secondary" disabled>Sau</button>
-        </div>
-      </div>
-
-      <div className="pagination">
-        <span className="pagination-info">Trang {currentPage} / {totalPages}</span>
-        <div className="pagination-buttons">
+      {filteredLogs.length > 0 && (
+      <div className="admin-pagination">
+        <span className="admin-pagination-info">Trang {currentPage} / {totalPages}</span>
+        <div className="admin-pagination-controls">
           <button 
-            className="btn-secondary" 
+            className="admin-pagination-btn" 
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(currentPage - 1)}
           >
             Trước
           </button>
-          <button className="btn-primary">{currentPage}</button>
+          <button className="admin-pagination-btn active">{currentPage}</button>
           <button 
-            className="btn-secondary" 
+            className="admin-pagination-btn" 
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
           >
@@ -196,6 +224,7 @@ const AuditLogs: React.FC = () => {
           </button>
         </div>
       </div>
+      )}
       </>
       )}
     </div>

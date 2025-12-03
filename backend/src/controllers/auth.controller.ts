@@ -36,7 +36,7 @@ export class AuthController {
         return;
       }
 
-      const user = await authService.getProfile(req.user.ma_nguoi_dung);
+      const user = await authService.getProfile(req.user.user_id);
 
       if (!user) {
         res.status(404).json({
@@ -74,7 +74,7 @@ export class AuthController {
       const { oldPassword, newPassword } = req.body;
 
       const result = await authService.changePassword(
-        req.user.ma_nguoi_dung,
+        req.user.user_id,
         oldPassword,
         newPassword
       );
@@ -111,11 +111,16 @@ export class AuthController {
     }
   }
 
-  // POST /api/v1/auth/logout
-  async logout(_req: AuthRequest, res: Response): Promise<void> {
+  // POST /api/auth/logout
+  async logout(req: AuthRequest, res: Response): Promise<void> {
     try {
       // For JWT, logout is handled on client side by removing token
       // Here we could add token to blacklist if needed
+      // Log the user_id if available
+      if (req.user?.user_id) {
+        console.log(`User ${req.user.user_id} (${req.user.email}) logged out`);
+      }
+      
       res.status(200).json({
         success: true,
         message: 'Đăng xuất thành công',

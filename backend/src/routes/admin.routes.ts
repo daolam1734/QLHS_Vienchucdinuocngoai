@@ -17,7 +17,7 @@ const router = Router();
 
 // Apply authentication and admin role check to all routes
 router.use(authenticateToken);
-router.use(checkRole(['VT_ADMIN']));
+router.use(checkRole(['ADMIN']));
 
 // Dashboard
 router.get('/dashboard-stats', adminController.getDashboardStats);

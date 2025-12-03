@@ -49,7 +49,7 @@ const Footer = () => {
                 <li>
                   <Link to="/gioi-thieu">
                     <ChevronRight size={16} />
-                    Giới thiệu hệ thống
+                    Giới thiệu
                   </Link>
                 </li>
                 <li>
@@ -169,7 +169,7 @@ const Footer = () => {
               © {currentYear} Trường Đại học Trà Vinh. Tất cả quyền được bảo lưu.
             </p>
             <p className="developer">
-              Phát triển bởi: <strong>Phòng Tổ chức - Hành chính</strong>
+              Phát triển bởi: <strong>daoconghoanglam</strong>
             </p>
           </div>
         </div>

@@ -27,9 +27,9 @@ const createTestUsers = async () => {
         don_vi_id: 1,
       },
       {
-        username: 'tchc',
-        email: 'tchc@tvu.edu.vn',
-        ho_ten: 'Phòng TCHC Admin',
+        username: 'tcns',
+        email: 'tcns@tvu.edu.vn',
+        ho_ten: 'Phòng TCNS Admin',
         don_vi_id: 2,
       },
       {

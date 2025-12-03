@@ -89,6 +89,18 @@ router.post(
   authController.changePassword
 );
 
-router.post('/logout', authenticateToken, authController.logout);
+// Logout route - authentication is optional (best effort logging)
+router.post('/logout', (req, res, next) => {
+  // Try to authenticate but don't fail if token is invalid
+  const token = req.headers.authorization?.split(' ')[1];
+  if (token) {
+    authenticateToken(req, res, (err) => {
+      // Continue even if authentication fails
+      next();
+    });
+  } else {
+    next();
+  }
+}, authController.logout);
 
 export default router;

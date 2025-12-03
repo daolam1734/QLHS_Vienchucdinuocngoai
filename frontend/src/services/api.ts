@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -13,7 +13,7 @@ const apiClient = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,8 +27,11 @@ apiClient.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login';
+      // Clear all auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Redirect to home page
+      window.location.href = '/';
     }
     return Promise.reject(error);
   }

@@ -1,47 +1,47 @@
-import { LogIn, FileText, Building2, Users, CheckSquare, FileCheck } from 'lucide-react';
+import { LogIn, FileText, Building2, Users, CheckSquare, FileCheck, Shield, UserCheck, Clock, Bell } from 'lucide-react';
 import './ProcessTimeline.css';
 
 const ProcessTimeline = () => {
   const steps = [
     {
       id: 1,
-      icon: <LogIn size={32} />,
-      title: 'Đăng nhập hệ thống',
-      description: 'Viên chức đăng nhập bằng tài khoản được cấp',
-      status: 'required',
-      color: '#0066cc'
+      icon: <FileText size={32} />,
+      title: 'Nộp hồ sơ online',
+      description: 'Chỉ cần 5 phút',
+      color: '#0066cc',
+      forParty: false
     },
     {
       id: 2,
-      icon: <FileText size={32} />,
-      title: 'Tạo hồ sơ – Đính kèm – Ký số',
-      description: 'Điền thông tin, tải tài liệu và ký số trực tuyến',
-      status: 'active',
-      color: '#17a2b8'
+      icon: <Shield size={32} />,
+      title: 'Quy trình Đảng viên',
+      description: 'Tự động qua Chi bộ & Đảng ủy',
+      color: '#f59e0b',
+      forParty: true
     },
     {
       id: 3,
       icon: <Building2 size={32} />,
-      title: 'Đơn vị xác nhận',
-      description: 'Trưởng khoa/phòng xác nhận hồ sơ',
-      status: 'pending',
-      color: '#ffc107'
+      title: 'Phê duyệt đa cấp',
+      description: 'Đơn vị → TCNS → BGH',
+      color: '#6366f1',
+      forParty: false
     },
     {
       id: 4,
-      icon: <Users size={32} />,
-      title: 'Chi bộ – Đảng ủy phê duyệt',
-      description: 'Cấp Đảng xem xét và phê duyệt',
-      status: 'pending',
-      color: '#dc3545'
+      icon: <Bell size={32} />,
+      title: 'Thông báo kết quả',
+      description: 'Nhận email tức thì',
+      color: '#17a2b8',
+      forParty: false
     },
     {
       id: 5,
       icon: <CheckSquare size={32} />,
-      title: 'Ban Giám hiệu duyệt cuối',
-      description: 'BGH phê duyệt và xuất kết quả',
-      status: 'pending',
-      color: '#28a745'
+      title: 'Hoàn tất',
+      description: 'Trong 5-7 ngày làm việc',
+      color: '#28a745',
+      forParty: false
     }
   ];
 
@@ -49,16 +49,16 @@ const ProcessTimeline = () => {
     <section className="process-section">
       <div className="container">
         <div className="section-header">
-          <h2 className="section-title">Quy trình xử lý hồ sơ</h2>
+          <h2 className="section-title">Làm thế nào để nộp hồ sơ?</h2>
           <p className="section-subtitle">
-            5 bước thực hiện đầy đủ từ nộp đơn đến nhận kết quả
+            Quy trình đơn giản, nhanh chóng và hoàn toàn minh bạch
           </p>
         </div>
 
         {/* Desktop Timeline */}
         <div className="process-timeline desktop-timeline">
           {steps.map((step, index) => (
-            <div key={step.id} className="timeline-step">
+            <div key={step.id} className={`timeline-step ${step.forParty ? 'party-step' : ''}`}>
               <div 
                 className={`step-circle ${step.status}`}
                 style={{ backgroundColor: step.color }}
@@ -68,13 +68,15 @@ const ProcessTimeline = () => {
               </div>
               
               <div className="step-content">
-                <h3 className="step-title">{step.title}</h3>
+                <h3 className="step-title">
+                  {step.title}
+                  {step.forParty && <Shield className="party-badge" size={18} />}
+                </h3>
                 <p className="step-description">{step.description}</p>
               </div>
               
               {index < steps.length - 1 && (
                 <div className="step-connector">
-                  <div className="connector-line"></div>
                   <div className="connector-arrow">→</div>
                 </div>
               )}
@@ -85,7 +87,7 @@ const ProcessTimeline = () => {
         {/* Mobile Timeline */}
         <div className="process-timeline mobile-timeline">
           {steps.map((step, index) => (
-            <div key={step.id} className="timeline-item">
+            <div key={step.id} className={`timeline-item ${step.forParty ? 'party-step' : ''}`}>
               <div className="timeline-marker">
                 <div 
                   className={`marker-circle ${step.status}`}
@@ -100,7 +102,7 @@ const ProcessTimeline = () => {
               
               <div className="timeline-content">
                 <div className="content-badge" style={{ backgroundColor: step.color }}>
-                  Bước {step.id}
+                  Bước {step.id} {step.forParty && '🛡️'}
                 </div>
                 <h3 className="content-title">{step.title}</h3>
                 <p className="content-description">{step.description}</p>
@@ -112,17 +114,24 @@ const ProcessTimeline = () => {
         {/* Process info */}
         <div className="process-info">
           <div className="info-card">
-            <FileCheck size={40} />
+            <Clock size={40} />
             <div className="info-content">
-              <h4>Thời gian xử lý trung bình</h4>
-              <p>3-5 ngày làm việc (tùy loại hồ sơ)</p>
+              <h4>5-7 ngày</h4>
+              <p>Thời gian xử lý trung bình</p>
+            </div>
+          </div>
+          <div className="info-card party-card">
+            <Shield size={40} />
+            <div className="info-content">
+              <h4>Đảng viên</h4>
+              <p>Quy trình riêng qua Chi bộ & Đảng ủy</p>
             </div>
           </div>
           <div className="info-card">
-            <Users size={40} />
+            <Bell size={40} />
             <div className="info-content">
-              <h4>Phê duyệt đa cấp</h4>
-              <p>Đảm bảo quy trình hành chính và Đảng</p>
+              <h4>Theo dõi 24/7</h4>
+              <p>Cập nhật trạng thái mọi lúc mọi nơi</p>
             </div>
           </div>
         </div>

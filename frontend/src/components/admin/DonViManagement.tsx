@@ -29,7 +29,7 @@ const DonViManagement: React.FC = () => {
       setError(null);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get('http://localhost:5000/api/v1/admin/donvi', {
+      const response = await axios.get('http://localhost:3000/api/admin/donvi', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -47,7 +47,7 @@ const DonViManagement: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/v1/admin/donvi/${id}`, {
+      await axios.delete(`http://localhost:3000/api/admin/donvi/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -66,36 +66,46 @@ const DonViManagement: React.FC = () => {
   };
 
   const filteredDonVi = donViList.filter(dv =>
-    dv.tenDonVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dv.maDonVi.toLowerCase().includes(searchTerm.toLowerCase())
+    dv.tenDonVi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    dv.maDonVi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    dv.loaiDonVi?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="admin-page">
-      <div className="page-header">
-        <div>
-          <h1>Quản lý đơn vị</h1>
-          <p className="page-description">Quản lý các phòng ban, khoa trong trường</p>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
+          <div className="admin-page-title-icon">
+            <Building2 size={20} />
+          </div>
+          <div>
+            <h1>Quản lý đơn vị</h1>
+            <p className="admin-page-subtitle">Quản lý các phòng ban, khoa trong trường</p>
+          </div>
         </div>
-        <button className="btn-primary">
-          <Plus size={20} />
-          Thêm đơn vị
-        </button>
+        <div className="admin-page-actions">
+          <button className="admin-btn admin-btn-primary">
+            <Plus size={20} />
+            Thêm đơn vị
+          </button>
+        </div>
       </div>
 
       {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+        <div className="admin-loading">
+          <div className="admin-spinner"></div>
+          <div className="admin-loading-text">Đang tải dữ liệu...</div>
         </div>
       )}
 
       {error && (
-        <div className="error-container">
-          <AlertCircle size={48} color="#F44336" />
-          <h3>Lỗi tải dữ liệu</h3>
-          <p>{error}</p>
-          <button className="btn-primary" onClick={fetchDonViList}>
+        <div className="admin-alert admin-alert-danger">
+          <AlertCircle className="admin-alert-icon" />
+          <div className="admin-alert-content">
+            <div className="admin-alert-title">Lỗi tải dữ liệu</div>
+            <div className="admin-alert-description">{error}</div>
+          </div>
+          <button className="admin-btn admin-btn-primary" onClick={fetchDonViList} style={{marginTop: 16}}>
             <RefreshCw size={20} />
             Thử lại
           </button>
@@ -104,11 +114,12 @@ const DonViManagement: React.FC = () => {
 
       {!loading && !error && (
         <>
-      <div className="filters-bar">
-        <div className="search-box">
-          <Search size={20} />
+      <div className="admin-toolbar">
+        <div className="admin-search-wrapper">
+          <Search className="admin-search-icon" size={18} />
           <input
             type="text"
+            className="admin-input admin-search-input"
             placeholder="Tìm kiếm theo mã, tên đơn vị..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -116,8 +127,8 @@ const DonViManagement: React.FC = () => {
         </div>
       </div>
 
-      <div className="data-table-container">
-        <table className="data-table">
+      <div className="admin-table-container">
+        <table className="admin-table">
           <thead>
             <tr>
               <th>Mã đơn vị</th>
@@ -133,26 +144,26 @@ const DonViManagement: React.FC = () => {
           <tbody>
             {filteredDonVi.map(dv => (
               <tr key={dv.id}>
-                <td className="font-medium">{dv.maDonVi}</td>
+                <td style={{fontWeight: 600}}>{dv.maDonVi || dv.id.substring(0, 8)}</td>
                 <td>{dv.tenDonVi}</td>
                 <td>
-                  <span className="role-badge role-default">{dv.loaiDonVi}</span>
+                  <span className="admin-badge admin-badge-info">{dv.loaiDonVi}</span>
                 </td>
-                <td>{dv.truongDonVi}</td>
+                <td>{dv.truongDonVi || 'Chưa có'}</td>
                 <td>
-                  <div className="flex-center">
-                    <UsersIcon size={14} className="mr-1" />
-                    {dv.soNguoi}
+                  <div style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                    <UsersIcon size={14} />
+                    {dv.soNguoi || 0}
                   </div>
                 </td>
-                <td>{dv.email}</td>
-                <td>{dv.dienThoai}</td>
+                <td>{dv.email || '-'}</td>
+                <td>{dv.dienThoai || '-'}</td>
                 <td>
-                  <div className="action-buttons">
-                    <button className="btn-icon" title="Chỉnh sửa" onClick={() => handleEdit(dv.id)}>
+                  <div className="admin-table-actions">
+                    <button className="admin-btn admin-btn-ghost admin-btn-icon" title="Chỉnh sửa" onClick={() => handleEdit(dv.id)}>
                       <Edit size={16} />
                     </button>
-                    <button className="btn-icon btn-danger" title="Xóa" onClick={() => handleDelete(dv.id)}>
+                    <button className="admin-btn admin-btn-ghost admin-btn-icon" title="Xóa" onClick={() => handleDelete(dv.id)} style={{color: 'var(--admin-danger)'}}>
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -163,21 +174,26 @@ const DonViManagement: React.FC = () => {
         </table>
 
         {filteredDonVi.length === 0 && (
-          <div className="empty-state">
-            <Building2 size={48} />
-            <p>Không tìm thấy đơn vị nào</p>
+          <div className="admin-empty">
+            <div className="admin-empty-icon">
+              <Building2 size={48} />
+            </div>
+            <div className="admin-empty-title">Không tìm thấy đơn vị nào</div>
+            <div className="admin-empty-description">Thử tìm kiếm với từ khóa khác hoặc thêm đơn vị mới</div>
           </div>
         )}
       </div>
 
-      <div className="pagination">
-        <span className="pagination-info">Hiển thị 1-{filteredDonVi.length} của {donViList.length} đơn vị</span>
-        <div className="pagination-buttons">
-          <button className="btn-secondary" disabled>Trước</button>
-          <button className="btn-primary">1</button>
-          <button className="btn-secondary" disabled>Sau</button>
+      {filteredDonVi.length > 0 && (
+      <div className="admin-pagination">
+        <span className="admin-pagination-info">Hiển thị 1-{filteredDonVi.length} của {donViList.length} đơn vị</span>
+        <div className="admin-pagination-controls">
+          <button className="admin-pagination-btn" disabled>Trước</button>
+          <button className="admin-pagination-btn active">1</button>
+          <button className="admin-pagination-btn" disabled>Sau</button>
         </div>
       </div>
+      )}
       </>
       )}
     </div>

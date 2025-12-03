@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, Clock, Filter, Eye, CheckCircle, XCircle, AlertTriangle, AlertCircle as AlertCircleIcon, RefreshCw } from 'lucide-react';
+import { CheckSquare, Clock, Filter, Eye, AlertTriangle, AlertCircle as AlertCircleIcon, RefreshCw } from 'lucide-react';
 import axios from 'axios';
+import { getLoaiHoSoText } from '../../utils/mappings';
 
 interface ApprovalItem {
   id: string;
@@ -31,7 +32,7 @@ const ApprovalQueue: React.FC = () => {
       setError(null);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get('http://localhost:5000/api/v1/admin/approval-queue', {
+      const response = await axios.get('http://localhost:3000/api/admin/approval-queue', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -44,44 +45,7 @@ const ApprovalQueue: React.FC = () => {
     }
   };
 
-  const handleApprove = async (id: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn phê duyệt hồ sơ này?')) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/v1/admin/approval/${id}/approve`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setApprovalList(approvalList.filter(item => item.id !== id));
-      alert('Phê duyệt thành công');
-    } catch (err: any) {
-      console.error('Error approving:', err);
-      alert(err.response?.data?.message || 'Không thể phê duyệt');
-    }
-  };
-
-  const handleReject = async (id: string) => {
-    const reason = window.prompt('Nhập lý do từ chối:');
-    if (!reason) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/v1/admin/approval/${id}/reject`, 
-        { reason },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setApprovalList(approvalList.filter(item => item.id !== id));
-      alert('Đã từ chối hồ sơ');
-    } catch (err: any) {
-      console.error('Error rejecting:', err);
-      alert(err.response?.data?.message || 'Không thể từ chối');
-    }
-  };
-
   const handleView = (id: string) => {
-    // TODO: Implement view detail
     console.log('View approval item:', id);
     alert('Chức năng xem chi tiết đang được phát triển');
   };
@@ -134,18 +98,20 @@ const ApprovalQueue: React.FC = () => {
       </div>
 
       {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+        <div className="admin-loading">
+          <div className="admin-spinner"></div>
+          <div className="admin-loading-text">Đang tải dữ liệu...</div>
         </div>
       )}
 
       {error && (
-        <div className="error-container">
-          <AlertCircleIcon size={48} color="#F44336" />
-          <h3>Lỗi tải dữ liệu</h3>
-          <p>{error}</p>
-          <button className="btn-primary" onClick={fetchApprovalQueue}>
+        <div className="admin-alert admin-alert-danger">
+          <AlertCircleIcon className="admin-alert-icon" />
+          <div className="admin-alert-content">
+            <div className="admin-alert-title">Lỗi tải dữ liệu</div>
+            <div className="admin-alert-description">{error}</div>
+          </div>
+          <button className="admin-btn admin-btn-primary" onClick={fetchApprovalQueue} style={{marginTop: 16}}>
             <RefreshCw size={20} />
             Thử lại
           </button>
@@ -154,10 +120,10 @@ const ApprovalQueue: React.FC = () => {
 
       {!loading && !error && (
         <>
-      <div className="filters-bar">
-        <div className="filter-group">
-          <Filter size={20} />
-          <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}>
+      <div className="admin-toolbar">
+        <div className="admin-filter-group">
+          <Filter size={18} />
+          <select className="admin-select" value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}>
             <option value="all">Tất cả cấp duyệt</option>
             <option value="Trưởng khoa">Trưởng khoa</option>
             <option value="TCHC">TCHC</option>
@@ -165,8 +131,8 @@ const ApprovalQueue: React.FC = () => {
           </select>
         </div>
 
-        <div className="filter-group">
-          <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+        <div className="admin-filter-group">
+          <select className="admin-select" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
             <option value="all">Tất cả độ ưu tiên</option>
             <option value="high">Cao</option>
             <option value="medium">Trung bình</option>
@@ -175,8 +141,8 @@ const ApprovalQueue: React.FC = () => {
         </div>
       </div>
 
-      <div className="data-table-container">
-        <table className="data-table">
+      <div className="admin-table-container">
+        <table className="admin-table">
           <thead>
             <tr>
               <th>Độ ưu tiên</th>
@@ -196,35 +162,33 @@ const ApprovalQueue: React.FC = () => {
               return (
                 <tr key={item.id}>
                   <td>
-                    <div className="flex-center">
+                    <div style={{display: 'flex', alignItems: 'center', gap: 4}}>
                       {getPriorityIcon(item.doUuTien)}
-                      <span className="ml-1">{getPriorityLabel(item.doUuTien)}</span>
+                      <span>{getPriorityLabel(item.doUuTien)}</span>
                     </div>
                   </td>
-                  <td className="font-medium">{item.maHoSo}</td>
+                  <td style={{fontWeight: 600}}>{item.maHoSo}</td>
                   <td>{item.hoTen}</td>
                   <td>{item.donVi}</td>
-                  <td>{item.loaiHoSo}</td>
+                  <td>{getLoaiHoSoText(item.loaiHoSo)}</td>
                   <td>
-                    <span className="role-badge role-truongkhoa">{item.capDuyet}</span>
+                    <span className="admin-badge admin-badge-info">{item.capDuyet}</span>
                   </td>
                   <td>{new Date(item.ngayNop).toLocaleDateString('vi-VN')}</td>
                   <td>
-                    <span className={daysRemaining < 2 ? 'text-red-500 font-medium' : ''}>
+                    <div style={{color: daysRemaining < 2 ? 'var(--admin-danger)' : 'inherit', fontWeight: daysRemaining < 2 ? 600 : 400}}>
                       {new Date(item.hanXuLy).toLocaleDateString('vi-VN')}
-                      <div style={{fontSize: '0.75rem', color: '#666'}}>({daysRemaining} ngày)</div>
-                    </span>
+                      <div style={{fontSize: '0.75rem', color: 'var(--admin-gray-500)', marginTop: 2}}>({daysRemaining} ngày)</div>
+                    </div>
                   </td>
                   <td>
-                    <div className="action-buttons">
-                      <button className="btn-icon" title="Xem chi tiết">
+                    <div className="admin-table-actions">
+                      <button 
+                        className="admin-btn admin-btn-ghost admin-btn-sm admin-btn-icon" 
+                        title="Xem chi tiết"
+                        onClick={() => handleView(item.id)}
+                      >
                         <Eye size={16} />
-                      </button>
-                      <button className="btn-icon btn-success" title="Phê duyệt">
-                        <CheckCircle size={16} />
-                      </button>
-                      <button className="btn-icon btn-danger" title="Từ chối">
-                        <XCircle size={16} />
                       </button>
                     </div>
                   </td>
@@ -235,21 +199,26 @@ const ApprovalQueue: React.FC = () => {
         </table>
 
         {filteredApprovals.length === 0 && (
-          <div className="empty-state">
-            <CheckSquare size={48} />
-            <p>Không có hồ sơ nào chờ phê duyệt</p>
+          <div className="admin-empty">
+            <div className="admin-empty-icon">
+              <CheckSquare size={48} />
+            </div>
+            <div className="admin-empty-title">Không có hồ sơ nào chờ phê duyệt</div>
+            <div className="admin-empty-description">Tất cả hồ sơ đã được xử lý hoặc thay đổi bộ lọc</div>
           </div>
         )}
       </div>
 
-      <div className="pagination">
-        <span className="pagination-info">Hiển thị 1-{filteredApprovals.length} của {approvalList.length} hồ sơ</span>
-        <div className="pagination-buttons">
-          <button className="btn-secondary" disabled>Trước</button>
-          <button className="btn-primary">1</button>
-          <button className="btn-secondary" disabled>Sau</button>
+      {filteredApprovals.length > 0 && (
+      <div className="admin-pagination">
+        <span className="admin-pagination-info">Hiển thị 1-{filteredApprovals.length} của {approvalList.length} hồ sơ</span>
+        <div className="admin-pagination-controls">
+          <button className="admin-pagination-btn" disabled>Trước</button>
+          <button className="admin-pagination-btn active">1</button>
+          <button className="admin-pagination-btn" disabled>Sau</button>
         </div>
       </div>
+      )}
       </>
       )}
     </div>

@@ -1,7 +1,7 @@
 {
   "name": "qlhs-dinuocngoai-frontend",
   "version": "1.0.0",
-  "description": "Frontend cho Hệ thống quản lý hồ sơ đi nước ngoài - Trường ĐH Trà Vinh",
+  "description": "Frontend cho Hệ thống quản lý hồ sơ viên chức đi nước ngoài - Trường ĐH Trà Vinh",
   "type": "module",
   "scripts": {
     "dev": "vite",

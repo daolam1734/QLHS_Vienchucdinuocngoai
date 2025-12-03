@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { X, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import axios from 'axios';
+import AuthModalBanner from './AuthModalBanner';
 import './ForgotPasswordModal.css';
-import './LoginModalBanner.css';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -9,10 +10,13 @@ interface ForgotPasswordModalProps {
   onOpenLogin?: () => void;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClose, onOpenLogin }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [resetLink, setResetLink] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email: string): string | null => {
@@ -43,31 +47,29 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess(data.message || 'Đã gửi email hướng dẫn đặt lại mật khẩu. Vui lòng kiểm tra hộp thư của bạn.');
+      if (response.data.success) {
+        setSuccess(response.data.message || 'Đã gửi email chứa link đặt lại mật khẩu.');
+        
+        // For demo: Display reset link
+        if (response.data.resetLink) {
+          setResetLink(response.data.resetLink);
+        }
+        
         setEmail('');
         
-        // Close modal after 5 seconds
-        setTimeout(() => {
-          onClose();
-          if (onOpenLogin) onOpenLogin();
-          setSuccess('');
-        }, 5000);
-      } else {
-        setError(data.message || 'Không thể gửi email. Vui lòng thử lại.');
+        // Don't auto-close if showing reset link
+        if (!response.data.resetLink) {
+          setTimeout(() => {
+            onClose();
+            if (onOpenLogin) onOpenLogin();
+            setSuccess('');
+          }, 5000);
+        }
       }
-    } catch (err) {
-      setError('Lỗi kết nối đến máy chủ. Vui lòng thử lại sau.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
       console.error('Forgot password error:', err);
     } finally {
       setIsLoading(false);
@@ -85,70 +87,29 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
   return (
     <div className="forgot-password-modal-overlay" onClick={handleOverlayClick}>
       <div className="forgot-password-modal-content">
+        <button className="forgot-password-close-btn" onClick={onClose} aria-label="Đóng">
+          <X size={24} />
+        </button>
+
         {/* Left Side - Banner */}
-        <div className="login-modal-banner">
-          <div className="banner-background">
-            <div className="banner-circle banner-circle-1"></div>
-            <div className="banner-circle banner-circle-2"></div>
-            <div className="banner-circle banner-circle-3"></div>
-          </div>
-          
-          <div className="banner-content">
-            <div className="banner-logo">
-              <img src="/logo-tvu.svg" alt="Logo TVU" />
-            </div>
-            
-            <h2 className="banner-title">Quên Mật Khẩu</h2>
-            <p className="banner-subtitle">Hệ thống Quản lý Hồ sơ Đi Nước ngoài</p>
-            
-            <div className="banner-features">
-              <div className="banner-feature">
-                <div className="feature-icon">
-                  <Mail size={20} />
-                </div>
-                <div className="feature-text">
-                  <h4>Email khôi phục</h4>
-                  <p>Nhận hướng dẫn qua email</p>
-                </div>
-              </div>
-              
-              <div className="banner-feature">
-                <div className="feature-icon">
-                  <CheckCircle size={20} />
-                </div>
-                <div className="feature-text">
-                  <h4>An toàn & Bảo mật</h4>
-                  <p>Quy trình xác thực chặt chẽ</p>
-                </div>
-              </div>
-              
-              <div className="banner-feature">
-                <div className="feature-icon">
-                  <AlertCircle size={20} />
-                </div>
-                <div className="feature-text">
-                  <h4>Hỗ trợ 24/7</h4>
-                  <p>Liên hệ IT nếu cần hỗ trợ</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="banner-footer">
-              <p>© 2025 Trường Đại học Trà Vinh</p>
-            </div>
-          </div>
-        </div>
+        <AuthModalBanner 
+          title="Khôi phục mật khẩu"
+          subtitle="Lấy lại truy cập tài khoản"
+          features={[
+            'Email khôi phục nhanh chóng',
+            'Quy trình bảo mật cao',
+            'Hỗ trợ 24/7',
+            'Xác thực an toàn'
+          ]}
+        />
 
         {/* Right Side - Forgot Password Form */}
         <div className="forgot-password-form-section">
-          <button className="forgot-password-close-btn" onClick={onClose} aria-label="Đóng">
-            <X size={24} />
-          </button>
-
           <div className="forgot-password-form-container">
             <div className="forgot-password-header">
+              <Mail size={32} color="#1976D2" />
               <h2>Quên Mật Khẩu</h2>
-              <p>Nhập địa chỉ email của bạn và chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu</p>
+              <p>Nhập email của bạn để nhận link đặt lại mật khẩu</p>
             </div>
 
             {error && (
@@ -161,7 +122,26 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
             {success && (
               <div className="forgot-password-alert forgot-password-alert-success">
                 <CheckCircle size={18} />
-                <span>{success}</span>
+                <div>
+                  <div>{success}</div>
+                  {resetLink && (
+                    <div style={{ marginTop: '16px', padding: '16px', background: '#f0fdf4', border: '2px solid #22c55e', borderRadius: '8px' }}>
+                      <strong style={{ color: '#15803d', display: 'block', marginBottom: '12px', fontSize: '14px' }}>Link đặt lại mật khẩu (DEMO):</strong>
+                      <div style={{ background: '#fff', padding: '12px', borderRadius: '6px', marginBottom: '12px', wordBreak: 'break-all', fontSize: '13px', color: '#1976D2' }}>
+                        {resetLink}
+                      </div>
+                      <button
+                        onClick={() => {
+                          window.location.href = resetLink;
+                        }}
+                        style={{ width: '100%', padding: '10px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        ➡️ Mở link đổi mật khẩu
+                      </button>
+                      <p style={{ marginTop: '10px', fontSize: '12px', color: '#64748b', textAlign: 'center' }}>Trong hệ thống thực, link sẽ được gửi qua email</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -207,6 +187,9 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                 <button 
                   type="button" 
                   onClick={() => {
+                    setSuccess('');
+                    setResetLink('');
+                    setError('');
                     onClose();
                     if (onOpenLogin) onOpenLogin();
                   }}
@@ -224,12 +207,17 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                 <div>
                   <strong>Lưu ý:</strong>
                   <ul>
-                    <li>Kiểm tra cả hộp thư spam/junk nếu không thấy email</li>
-                    <li>Link khôi phục có hiệu lực trong 1 giờ</li>
-                    <li>Liên hệ IT Support nếu không nhận được email sau 5 phút</li>
+                    <li>Nhập email tài khoản TVU (@tvu.edu.vn)</li>
+                    <li>Link đặt lại mật khẩu sẽ được gửi vào email của bạn</li>
+                    <li>Link có hiệu lực trong 1 giờ</li>
+                    <li>Kiểm tra cả thư mục spam nếu không thấy email</li>
                   </ul>
                 </div>
               </div>
+            </div>
+
+            <div className="forgot-password-modal-footer">
+              <p>&copy; 2025 Trường Đại học Trà Vinh</p>
             </div>
           </div>
         </div>

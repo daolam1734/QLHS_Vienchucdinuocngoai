@@ -1,205 +1,127 @@
-import React, { useState, FormEvent } from 'react';
-import { X, Eye, EyeOff, Lock, AlertCircle, Shield, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Lock, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import axios from 'axios';
+import AuthModalBanner from './AuthModalBanner';
 import './ChangePasswordModal.css';
-import './LoginModalBanner.css';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  userEmail?: string;
+  isFirstLogin?: boolean;
 }
 
-interface PasswordForm {
-  oldPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-interface PasswordError {
-  message: string;
-  type: 'error' | 'warning' | 'success';
-}
-
-const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState<PasswordForm>({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [showOldPassword, setShowOldPassword] = useState(false);
+const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  userEmail,
+  isFirstLogin = false 
+}) => {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState<PasswordError | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (error) setError(null);
-  };
 
   const validatePassword = (password: string): string | null => {
-    if (password.length < 6) {
-      return 'Mật khẩu phải có ít nhất 6 ký tự';
+    if (password.length < 8) {
+      return 'Mật khẩu phải có ít nhất 8 ký tự';
     }
     if (!/[A-Z]/.test(password)) {
-      return 'Mật khẩu phải chứa ít nhất 1 chữ hoa';
+      return 'Mật khẩu phải có ít nhất 1 chữ hoa';
+    }
+    if (!/[a-z]/.test(password)) {
+      return 'Mật khẩu phải có ít nhất 1 chữ thường';
     }
     if (!/[0-9]/.test(password)) {
-      return 'Mật khẩu phải chứa ít nhất 1 chữ số';
+      return 'Mật khẩu phải có ít nhất 1 chữ số';
     }
     return null;
   };
 
-  const validateForm = (): boolean => {
-    if (!formData.oldPassword) {
-      setError({
-        message: 'Vui lòng nhập mật khẩu cũ',
-        type: 'error'
-      });
-      return false;
-    }
-
-    if (!formData.newPassword) {
-      setError({
-        message: 'Vui lòng nhập mật khẩu mới',
-        type: 'error'
-      });
-      return false;
-    }
-
-    const passwordError = validatePassword(formData.newPassword);
-    if (passwordError) {
-      setError({
-        message: passwordError,
-        type: 'error'
-      });
-      return false;
-    }
-
-    if (formData.oldPassword === formData.newPassword) {
-      setError({
-        message: 'Mật khẩu mới phải khác mật khẩu cũ',
-        type: 'error'
-      });
-      return false;
-    }
-
-    if (!formData.confirmPassword) {
-      setError({
-        message: 'Vui lòng xác nhận mật khẩu mới',
-        type: 'error'
-      });
-      return false;
-    }
-
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError({
-        message: 'Mật khẩu xác nhận không khớp',
-        type: 'error'
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
 
-    if (!validateForm()) return;
+    const validationError = validatePassword(newPassword);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
-    setIsLoading(true);
-    setError(null);
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    if (newPassword === currentPassword) {
+      setError('Mật khẩu mới phải khác mật khẩu hiện tại');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const token = localStorage.getItem('token');
-      
-      if (!token) {
-        setError({
-          message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
-          type: 'error'
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await fetch('http://localhost:5000/api/v1/auth/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+      const response = await axios.post(
+        `${API_URL}/auth/change-password`,
+        {
+          email: userEmail,
+          currentPassword,
+          newPassword
         },
-        body: JSON.stringify({
-          oldPassword: formData.oldPassword,
-          newPassword: formData.newPassword,
-          confirmPassword: formData.confirmPassword
-        })
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        setError({
-          message: data.message || 'Đổi mật khẩu thất bại',
-          type: 'error'
-        });
-        setIsLoading(false);
-        return;
+      if (response.data.success) {
+        setSuccess('Đổi mật khẩu thành công!');
+        setTimeout(() => {
+          onSuccess();
+          resetForm();
+        }, 1500);
       }
-
-      // Success
-      setError({
-        message: 'Đổi mật khẩu thành công!',
-        type: 'success'
-      });
-
-      // Reset form
-      setTimeout(() => {
-        setFormData({
-          oldPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
-        onSuccess();
-        onClose();
-      }, 1500);
-
-    } catch (err) {
-      console.error('Change password error:', err);
-      setError({
-        message: 'Có lỗi xảy ra. Vui lòng thử lại sau.',
-        type: 'error'
-      });
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Đổi mật khẩu thất bại');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+  const resetForm = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setError('');
+    setSuccess('');
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handleClose = () => {
+    if (!loading && !isFirstLogin) {
+      resetForm();
       onClose();
     }
   };
 
-  const getPasswordStrength = (password: string): string => {
-    if (!password) return '';
-    if (password.length < 6) return 'Yếu';
-    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) return 'Trung bình';
-    if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) return 'Mạnh';
-    return 'Khá';
-  };
-
-  const getPasswordStrengthClass = (password: string): string => {
-    const strength = getPasswordStrength(password);
-    if (strength === 'Yếu') return 'weak';
-    if (strength === 'Trung bình') return 'medium';
-    if (strength === 'Khá') return 'good';
-    if (strength === 'Mạnh') return 'strong';
-    return '';
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && !loading && !isFirstLogin) {
+      handleClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -207,212 +129,162 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
   return (
     <div className="change-password-modal-overlay" onClick={handleOverlayClick}>
       <div className="change-password-modal-content">
-        {/* Close Button */}
-        <button
-          className="change-password-modal-close"
-          onClick={onClose}
-          aria-label="Đóng"
-        >
-          <X size={24} />
-        </button>
+        {!isFirstLogin && (
+          <button
+            className="change-password-modal-close"
+            onClick={handleClose}
+            disabled={loading}
+            aria-label="Đóng"
+          >
+            <X size={24} />
+          </button>
+        )}
 
         {/* Left Side - Banner */}
-        <div className="login-modal-banner">
-          <div className="banner-content">
-            <div className="banner-logo">
-              <img 
-                src="https://www.tvu.edu.vn/wp-content/uploads/2017/04/logo-tv-university.png" 
-                alt="Logo Trường Đại học Trà Vinh" 
-              />
-            </div>
-            <h1 className="banner-title">Trường Đại học Trà Vinh</h1>
-            <h2 className="banner-subtitle">Hệ thống Quản lý Hồ sơ<br/>Đi Nước Ngoài</h2>
-            <div className="banner-features">
-              <div className="feature-item">
-                <div className="feature-icon">✓</div>
-                <span>Bảo mật thông tin tuyệt đối</span>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">✓</div>
-                <span>Mã hóa mật khẩu chuẩn quốc tế</span>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">✓</div>
-                <span>Đổi mật khẩu dễ dàng, an toàn</span>
-              </div>
-            </div>
-            <div className="banner-decoration">
-              <div className="decoration-circle circle-1"></div>
-              <div className="decoration-circle circle-2"></div>
-              <div className="decoration-circle circle-3"></div>
-            </div>
-          </div>
-        </div>
+        <AuthModalBanner 
+          title="Bảo mật tài khoản"
+          subtitle="Đổi mật khẩu định kỳ"
+          features={[
+            'Mật khẩu mạnh bảo vệ tài khoản',
+            'Đổi mật khẩu định kỳ',
+            'Không chia sẻ mật khẩu',
+            'Sử dụng mật khẩu phức tạp'
+          ]}
+        />
 
-        {/* Right Side - Change Password Form */}
+        {/* Right Side - Form */}
         <div className="change-password-modal-form-container">
           <div className="change-password-header">
-            <h3>Đổi mật khẩu</h3>
-            <p>Tạo mật khẩu mới mạnh và an toàn</p>
+            <Lock size={32} color="#1976D2" />
+            <h3>{isFirstLogin ? 'Đổi mật khẩu bắt buộc' : 'Đổi mật khẩu'}</h3>
+            <p>
+              {isFirstLogin 
+                ? 'Vì lý do bảo mật, bạn cần đổi mật khẩu trước khi tiếp tục sử dụng hệ thống'
+                : 'Nhập mật khẩu hiện tại và mật khẩu mới của bạn'
+              }
+            </p>
           </div>
-
-          {/* Security Info */}
-          <div className="change-password-info">
-            <Shield size={16} />
-            <span>Mật khẩu của bạn được mã hóa và bảo mật</span>
-          </div>
-
-          {/* Error/Success Message */}
-          {error && (
-            <div className={`change-password-alert change-password-alert-${error.type}`}>
-              {error.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-              <span>{error.message}</span>
-            </div>
-          )}
-
-          {/* Change Password Form */}
           <form onSubmit={handleSubmit} className="change-password-form">
             <div className="form-group">
-              <label htmlFor="oldPassword">
-                Mật khẩu cũ <span className="required">*</span>
-              </label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" size={20} />
+              <label>Mật khẩu hiện tại:</label>
+              <div className="password-input-wrapper">
                 <input
-                  type={showOldPassword ? 'text' : 'password'}
-                  id="oldPassword"
-                  name="oldPassword"
-                  value={formData.oldPassword}
-                  onChange={handleChange}
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Nhập mật khẩu hiện tại"
-                  disabled={isLoading}
-                  autoComplete="current-password"
                   required
+                  disabled={loading}
+                  autoFocus
                 />
                 <button
                   type="button"
-                  className="toggle-password"
-                  onClick={() => setShowOldPassword(!showOldPassword)}
-                  disabled={isLoading}
-                  aria-label={showOldPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  className="toggle-password-btn"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  tabIndex={-1}
                 >
-                  {showOldPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="newPassword">
-                Mật khẩu mới <span className="required">*</span>
-              </label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" size={20} />
+              <label>Mật khẩu mới:</label>
+              <div className="password-input-wrapper">
                 <input
                   type={showNewPassword ? 'text' : 'password'}
-                  id="newPassword"
-                  name="newPassword"
-                  value={formData.newPassword}
-                  onChange={handleChange}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Nhập mật khẩu mới"
-                  disabled={isLoading}
-                  autoComplete="new-password"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
-                  className="toggle-password"
+                  className="toggle-password-btn"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  disabled={isLoading}
-                  aria-label={showNewPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  tabIndex={-1}
                 >
-                  {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {formData.newPassword && (
-                <div className="password-strength">
-                  <div className="strength-label">
-                    Độ mạnh: <span className={getPasswordStrengthClass(formData.newPassword)}>{getPasswordStrength(formData.newPassword)}</span>
-                  </div>
-                  <div className="strength-bars">
-                    <div className={`strength-bar ${getPasswordStrengthClass(formData.newPassword)}`}></div>
-                    <div className={`strength-bar ${getPasswordStrengthClass(formData.newPassword) !== 'weak' ? getPasswordStrengthClass(formData.newPassword) : ''}`}></div>
-                    <div className={`strength-bar ${getPasswordStrengthClass(formData.newPassword) === 'good' || getPasswordStrengthClass(formData.newPassword) === 'strong' ? getPasswordStrengthClass(formData.newPassword) : ''}`}></div>
-                    <div className={`strength-bar ${getPasswordStrengthClass(formData.newPassword) === 'strong' ? getPasswordStrengthClass(formData.newPassword) : ''}`}></div>
-                  </div>
-                </div>
-              )}
+              <div className="password-requirements">
+                <p className="requirements-title">Yêu cầu mật khẩu:</p>
+                <ul>
+                  <li className={newPassword.length >= 8 ? 'valid' : ''}>
+                    Ít nhất 8 ký tự
+                  </li>
+                  <li className={/[A-Z]/.test(newPassword) ? 'valid' : ''}>
+                    Ít nhất 1 chữ hoa
+                  </li>
+                  <li className={/[a-z]/.test(newPassword) ? 'valid' : ''}>
+                    Ít nhất 1 chữ thường
+                  </li>
+                  <li className={/[0-9]/.test(newPassword) ? 'valid' : ''}>
+                    Ít nhất 1 chữ số
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">
-                Xác nhận mật khẩu mới <span className="required">*</span>
-              </label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" size={20} />
+              <label>Xác nhận mật khẩu mới:</label>
+              <div className="password-input-wrapper">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Nhập lại mật khẩu mới"
-                  disabled={isLoading}
-                  autoComplete="new-password"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
-                  className="toggle-password"
+                  className="toggle-password-btn"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={isLoading}
-                  aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  tabIndex={-1}
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* Password Requirements */}
-            <div className="password-requirements">
-              <p className="requirements-title">Yêu cầu mật khẩu:</p>
-              <ul>
-                <li className={formData.newPassword.length >= 6 ? 'valid' : ''}>
-                  ✓ Ít nhất 6 ký tự
-                </li>
-                <li className={/[A-Z]/.test(formData.newPassword) ? 'valid' : ''}>
-                  ✓ Ít nhất 1 chữ hoa
-                </li>
-                <li className={/[0-9]/.test(formData.newPassword) ? 'valid' : ''}>
-                  ✓ Ít nhất 1 chữ số
-                </li>
-                <li className={formData.newPassword !== formData.oldPassword && formData.newPassword ? 'valid' : ''}>
-                  ✓ Khác mật khẩu cũ
-                </li>
-              </ul>
-            </div>
+            {error && (
+              <div className="message error-message">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {success && (
+              <div className="message success-message">
+                <CheckCircle size={16} />
+                <span>{success}</span>
+              </div>
+            )}
 
             <button
               type="submit"
-              className="btn-change-password-submit"
-              disabled={isLoading}
+              className="btn-submit"
+              disabled={loading || !currentPassword || !newPassword || !confirmPassword}
             >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  <span>Đang xử lý...</span>
-                </>
-              ) : (
-                'Đổi mật khẩu'
-              )}
+              {loading ? 'Đang xử lý...' : 'Đổi mật khẩu'}
             </button>
+
+            {!isFirstLogin && (
+              <button
+                type="button"
+                onClick={handleClose}
+                className="btn-cancel"
+                disabled={loading}
+              >
+                Hủy
+              </button>
+            )}
           </form>
 
-          {/* Footer */}
           <div className="change-password-modal-footer">
-            <p>
-              <Lock size={14} />
-              Mật khẩu được mã hóa bằng bcrypt
-            </p>
+            <p>&copy; 2025 Trường Đại học Trà Vinh</p>
           </div>
         </div>
       </div>

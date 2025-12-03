@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Download, Calendar, TrendingUp, FileText, Users, Globe, Award, AlertCircle, RefreshCw } from 'lucide-react';
+import { BarChart3, Download, Calendar, FileText, Users, Globe, Award, AlertCircle, RefreshCw } from 'lucide-react';
 import axios from 'axios';
+import { getLoaiHoSoText } from '../../utils/mappings';
+import './AdminLayout.css';
 
 interface ReportStats {
   totalApplications: number;
@@ -37,7 +39,7 @@ const ReportsPage: React.FC = () => {
       setError(null);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get(`http://localhost:5000/api/v1/admin/reports?timeRange=${timeRange}`, {
+      const response = await axios.get(`http://localhost:3000/api/admin/reports?timeRange=${timeRange}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -53,7 +55,7 @@ const ReportsPage: React.FC = () => {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/v1/admin/reports/export?timeRange=${timeRange}`, {
+      const response = await axios.get(`http://localhost:3000/api/admin/reports/export?timeRange=${timeRange}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -76,30 +78,39 @@ const ReportsPage: React.FC = () => {
 
   return (
     <div className="admin-page">
-      <div className="page-header">
-        <div>
-          <h1>Báo cáo thống kê</h1>
-          <p className="page-description">Thống kê và phân tích dữ liệu hồ sơ đi nước ngoài</p>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
+          <div className="admin-page-title-icon">
+            <BarChart3 size={20} />
+          </div>
+          <div>
+            <h1>Báo cáo thống kê</h1>
+            <p className="admin-page-subtitle">Thống kê và phân tích dữ liệu hồ sơ đi nước ngoài</p>
+          </div>
         </div>
-        <button className="btn-primary" onClick={handleExport}>
-          <Download size={20} />
-          Xuất báo cáo
-        </button>
+        <div className="admin-page-actions">
+          <button className="admin-btn admin-btn-primary" onClick={handleExport}>
+            <Download size={20} />
+            Xuất báo cáo
+          </button>
+        </div>
       </div>
 
       {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+        <div className="admin-loading">
+          <div className="admin-spinner"></div>
+          <div className="admin-loading-text">Đang tải dữ liệu...</div>
         </div>
       )}
 
       {error && (
-        <div className="error-container">
-          <AlertCircle size={48} color="#F44336" />
-          <h3>Lỗi tải dữ liệu</h3>
-          <p>{error}</p>
-          <button className="btn-primary" onClick={fetchReportData}>
+        <div className="admin-alert admin-alert-danger">
+          <AlertCircle className="admin-alert-icon" />
+          <div className="admin-alert-content">
+            <div className="admin-alert-title">Lỗi tải dữ liệu</div>
+            <div className="admin-alert-description">{error}</div>
+          </div>
+          <button className="admin-btn admin-btn-primary" onClick={fetchReportData} style={{marginTop: 16}}>
             <RefreshCw size={20} />
             Thử lại
           </button>
@@ -108,8 +119,8 @@ const ReportsPage: React.FC = () => {
 
       {!loading && !error && (
         <>
-      <div className="filters-bar">
-        <div className="filter-group">
+      <div className="admin-toolbar" style={{marginBottom: 24}}>
+        <div className="admin-filter-group">
           <Calendar size={20} />
           <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
             <option value="week">Tuần này</option>
@@ -119,7 +130,7 @@ const ReportsPage: React.FC = () => {
           </select>
         </div>
 
-        <div className="filter-group">
+        <div className="admin-filter-group">
           <BarChart3 size={20} />
           <select value={reportType} onChange={(e) => setReportType(e.target.value)}>
             <option value="overview">Tổng quan</option>
@@ -131,57 +142,49 @@ const ReportsPage: React.FC = () => {
       </div>
 
       {/* Overview Stats */}
-      <div className="stats-grid" style={{marginBottom: '2rem'}}>
-        <div className="stat-card">
-          <div className="stat-icon" style={{background: '#E3F2FD'}}>
-            <FileText style={{color: '#1976D2'}} size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.totalApplications}</div>
-            <div className="stat-label">Tổng hồ sơ</div>
-            <div className="stat-change positive">
-              <TrendingUp size={14} />
-              12% so với tháng trước
+      <div className="admin-stats-grid" style={{marginBottom: '2rem'}}>
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <div>
+              <div className="admin-stat-label">Tổng hồ sơ</div>
+              <div className="admin-stat-value">{stats.totalApplications}</div>
+            </div>
+            <div className="admin-stat-icon" style={{ background: 'var(--admin-primary-light)', color: 'var(--admin-primary)' }}>
+              <FileText size={24} />
             </div>
           </div>
         </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{background: '#E8F5E9'}}>
-            <Award style={{color: '#4CAF50'}} size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.approved}</div>
-            <div className="stat-label">Đã duyệt</div>
-            <div className="stat-change positive">
-              <TrendingUp size={14} />
-              8% so với tháng trước
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <div>
+              <div className="admin-stat-label">Đã duyệt</div>
+              <div className="admin-stat-value">{stats.approved}</div>
+            </div>
+            <div className="admin-stat-icon" style={{ background: 'var(--admin-success-light)', color: 'var(--admin-success)' }}>
+              <Award size={24} />
             </div>
           </div>
         </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{background: '#FFF3E0'}}>
-            <FileText style={{color: '#FF9800'}} size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.pending}</div>
-            <div className="stat-label">Chờ duyệt</div>
-            <div className="stat-change positive">
-              <TrendingUp size={14} />
-              5 hồ sơ mới
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <div>
+              <div className="admin-stat-label">Chờ duyệt</div>
+              <div className="admin-stat-value">{stats.pending}</div>
+            </div>
+            <div className="admin-stat-icon" style={{ background: 'var(--admin-warning-light)', color: 'var(--admin-warning)' }}>
+              <FileText size={24} />
             </div>
           </div>
         </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{background: '#FFEBEE'}}>
-            <FileText style={{color: '#F44336'}} size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.rejected}</div>
-            <div className="stat-label">Từ chối</div>
-            <div className="stat-change">14.5% tổng số</div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <div>
+              <div className="admin-stat-label">Từ chối</div>
+              <div className="admin-stat-value">{stats.rejected}</div>
+            </div>
+            <div className="admin-stat-icon" style={{ background: 'var(--admin-danger-light)', color: 'var(--admin-danger)' }}>
+              <FileText size={24} />
+            </div>
           </div>
         </div>
       </div>
@@ -194,7 +197,7 @@ const ReportsPage: React.FC = () => {
             <h3><Globe size={20} /> Theo quốc gia</h3>
           </div>
           <div className="report-content">
-            {stats.byCountry.map((item, index) => (
+            {(stats.byCountry || []).map((item, index) => (
               <div key={index} className="progress-item">
                 <div className="progress-label">
                   <span>{item.country}</span>
@@ -217,7 +220,7 @@ const ReportsPage: React.FC = () => {
             <h3><Users size={20} /> Theo đơn vị</h3>
           </div>
           <div className="report-content">
-            {stats.byDepartment.map((item, index) => (
+            {(stats.byDepartment || []).map((item, index) => (
               <div key={index} className="progress-item">
                 <div className="progress-label">
                   <span>{item.dept}</span>
@@ -241,10 +244,10 @@ const ReportsPage: React.FC = () => {
           </div>
           <div className="report-content">
             <div className="type-stats">
-              {stats.byType.map((item, index) => (
+              {(stats.byType || []).map((item, index) => (
                 <div key={index} className="type-stat-item">
                   <div className="type-stat-header">
-                    <span className="type-stat-label">{item.type}</span>
+                    <span className="type-stat-label">{getLoaiHoSoText(item.type)}</span>
                     <span className="type-stat-value">{item.count}</span>
                   </div>
                   <div className="progress-bar" style={{marginTop: '0.5rem'}}>
